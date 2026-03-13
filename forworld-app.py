@@ -15,27 +15,25 @@ st.set_page_config(page_title="光茵築夢日記", page_icon="🏢", layout="wi
 # ==========================================
 # 🌟 使用 Columns 來把自訂圖片跟標題排在一起
 # ==========================================
-col_logo, col_title = st.columns([1, 15]) # 數字代表左右寬度比例，可以自己微調
+# ==========================================
+# 🌟 1. 視覺與迎賓區 (Logo + 標題 + 計數器)
+# ==========================================
+
+# 📝 將畫面切成三塊：比例大約是 Logo(1) : 標題(8) : 計數器(3)
+col_logo, col_title, col_counter = st.columns([1, 8, 3]) 
 
 with col_logo:
-    # 這裡讀取你剛剛上傳的圖片
-    st.image("logo.png", width=60) # width 可以控制圖片大小
+    # 顯示你的自訂圖片 (請確認 GitHub 裡有這張圖)
+    st.image("logo.png", use_container_width=True) 
 
 with col_title:
-    # 這裡放乾淨的文字標題（把原本的 emoji 拿掉）
-    st.title("光茵築夢日記")
+    # 乾淨的文字標題
+    st.title("馥華之丘-光茵 施工儀表板")
 
-#col_title, col_counter = st.columns([3, 1])
-#with col_title:
-    # 📝 調整 3：更改標題為光茵築夢日記
-    #st.title("🏢 光茵築夢日記")
-    
-    
 with col_counter:
-    st.write("") # 稍微往下推一點點來對齊標題
+    st.write("") # 稍微往下推一點點，讓計數器跟標題對齊
     
-    # 🌟 採用徐杰大師驗證過的 hits.sh 穩定版計數器！
-    # ⚠️ 記得把下面的 forworld-hills.streamlit.app 換成你剛剛真正部署成功的那個網址喔！
+    # 🌟 徐杰大師的穩定版計數器
     st.markdown('''
     <div style='display: flex; justify-content: flex-end; align-items: center; font-size: 15px; color: #666666; font-weight: bold;'>
         <span style='margin-right: 8px;'>👁️ 芳鄰瀏覽：</span>
