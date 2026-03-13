@@ -1,0 +1,51 @@
+name: 馥華光茵監工排程
+
+on:
+  schedule:
+    # 這裡的時間是 UTC。UTC 01:00 = 台灣 09:00，UTC 13:00 = 台灣 21:00
+    - cron: '0 1,13 * * *'
+  
+  # 這是讓你可以手動按鈕測試的超強功能！
+  workflow_dispatch:
+    inputs:
+      force_test:
+        description: '強制發送最新進度的測試通知？ (勾選表示是)'
+        required: true
+        type: boolean
+        default: true
+
+jobs:
+  run-scraper:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write # 允許寫入 history.csv 回到資料庫
+      
+    steps:
+      - name: 📥 下載專案代碼
+        uses: actions/checkout@v3
+
+      - name: 🐍 設定 Python 環境
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+
+      - name: 📦 安裝所需套件
+        run: |
+          pip install -r requirements.txt
+
+      - name: 🚀 執行監工爬蟲
+        env:
+          LINE_CHANNEL_TOKEN: ${{ secrets.LINE_CHANNEL_TOKEN }}
+          LINE_USER_ID: ${{ secrets.LINE_LINE_USER_ID }}
+          # 如果是手動觸發，傳入測試變數
+          FORCE_TEST: ${{ github.event.inputs.force_test || 'false' }}
+        run: |
+          python scraper.py
+
+      - name: 💾 將新進度存回 GitHub 記憶體
+        run: |
+          git config --global user.name 'GitHub Actions Bot'
+          git config --global user.email 'actions@github.com'
+          git add history.csv
+          # 檢查是否有檔案更新，有更新才 commit
+          git diff --quiet && git diff --staged --quiet || (git commit -m "自動更新：工程進度紀錄" && git push)
