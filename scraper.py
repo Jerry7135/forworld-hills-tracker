@@ -116,7 +116,7 @@ def job():
 
         msg = ""
         if FORCE_TEST:
-            msg = (f"\n🔔 [系統手動測試] 親愛的芳鄰，雲端連線成功！\n"
+            msg = (f"\n🔔 [系統手動測試] 親愛的芳鄰，讓我們一起紀錄與期待光茵的落成！\n"
                    f"✅ 目前最新進度：\n"
                    f"📌 項目：{latest_row['勘驗項目']}\n"
                    f"🚥 狀態：{latest_row['審核進度']}\n"
@@ -137,3 +137,4 @@ def job():
 
 if __name__ == "__main__":
     job()
+
