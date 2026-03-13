@@ -15,7 +15,7 @@ col_title, col_counter = st.columns([3, 1])
 
 with col_title:
     # 📝 調整 3：更改標題為光茵築夢日記
-    st.title("🏡 光茵築夢日記")
+    st.title("🏢 光茵築夢日記")
     
 with col_counter:
     st.write("") # 稍微往下推一點點來對齊標題
@@ -169,5 +169,3 @@ if not df.empty:
 
 else:
     st.warning("⚠️ 儀表板連線中，請確認 GitHub 專案中的 history.csv 是否存在。")
-
-
