@@ -31,7 +31,7 @@ jobs:
 
       - name: 📦 安裝所需套件
         run: |
-          pip install -r requirements.txt
+          pip install -r scraper_reqs.txt
 
       - name: 🚀 執行監工爬蟲
         env:
