@@ -18,14 +18,17 @@ with col_title:
     st.title("🏢 光茵築夢日記")
     
 with col_counter:
-    st.write("") 
-    # 📝 修正：將標籤改為英文 VIEWS，徹底解決外國 API 中文擠壓的問題
-    st.markdown(
-        '<div style="text-align: right;">'
-        '<img src="https://komarev.com/ghpvc/?username=forworld-hills-tracker&label=VIEWS&color=79C83D&style=flat" alt="Views">'
-        '</div>', 
-        unsafe_allow_html=True
-    )
+    st.write("") # 稍微往下推一點點來對齊標題
+    
+    # 🌟 採用徐杰大師驗證過的 hits.sh 穩定版計數器！
+    # ⚠️ 記得把下面的 forworld-hills.streamlit.app 換成你剛剛真正部署成功的那個網址喔！
+    st.markdown('''
+    <div style='display: flex; justify-content: flex-end; align-items: center; font-size: 15px; color: #666666; font-weight: bold;'>
+        <span style='margin-right: 8px;'>👁️ 芳鄰瀏覽：</span>
+        <img src="https://hits.sh/forworld-hills.streamlit.app.svg?label=累計&color=79C83D&labelColor=555555" alt="views"/>
+    </div>
+    ''', unsafe_allow_html=True)
+    
 st.info("本系統由 B6 芳鄰 (Jerry) 開發，自動連線新北市政府數據，提供最新工程進度推估。")
 
 # 換成你提供的建案渲染圖網址
