@@ -11,11 +11,25 @@ st.set_page_config(page_title="光茵築夢日記", page_icon="🏢", layout="wi
 # ==========================================
 # 👑 1. 視覺與迎賓區 (標題與右上角計數器)
 # ==========================================
-col_title, col_counter = st.columns([3, 1])
+
+# ==========================================
+# 🌟 使用 Columns 來把自訂圖片跟標題排在一起
+# ==========================================
+col_logo, col_title = st.columns([1, 15]) # 數字代表左右寬度比例，可以自己微調
+
+with col_logo:
+    # 這裡讀取你剛剛上傳的圖片
+    st.image("logo.png", width=60) # width 可以控制圖片大小
 
 with col_title:
+    # 這裡放乾淨的文字標題（把原本的 emoji 拿掉）
+    st.title("光茵築夢日記")
+
+#col_title, col_counter = st.columns([3, 1])
+#with col_title:
     # 📝 調整 3：更改標題為光茵築夢日記
-    st.title("🏢 光茵築夢日記")
+    #st.title("🏢 光茵築夢日記")
+    
     
 with col_counter:
     st.write("") # 稍微往下推一點點來對齊標題
