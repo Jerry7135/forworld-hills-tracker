@@ -128,7 +128,7 @@ def job():
                    f"🚥 審核進度：{latest_row['審核進度']}\n"
                    f"📅 掛號日期：{latest_row['掛號日期']}\n"
                    f"📊 目前累積：共 {len(new_df)} 筆\n"
-                   f"🌐 光茵築夢日記網頁：{https://forworld-hills-schedule.streamlit.app/}") # 👈 這裡加上網址
+                   f"🌐 光茵築夢日記網頁：{https://forworld-hills-schedule.streamlit.app}") # 👈 這裡加上網址
               
         send_line_message(msg)
         print(f"🎉 發現異動或測試！已推播：{latest_row['勘驗項目']}")
@@ -137,6 +137,7 @@ def job():
 
 if __name__ == "__main__":
     job()
+
 
 
 
