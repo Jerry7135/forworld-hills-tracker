@@ -121,8 +121,9 @@ if not df.empty:
     # 🖼️ 【精選輪播照片區】: 放 1~3 張最精華的照片，網頁直接顯示
     MILESTONE_PHOTOS = {
         "地上4樓頂版勘驗": [
-            {"url": "https://raw.githubusercontent.com/Jerry7135/forworld-hills-tracker/main/photos/4f_1.jpg", "tab_name": "📸 AB棟空拍", "caption": "空拍照"},
-            {"url": "https://raw.githubusercontent.com/Jerry7135/forworld-hills-tracker/main/photos/4f_2.jpg", "tab_name": "📸 金城交流道", "caption": "空拍照"}
+            {"url": "https://raw.githubusercontent.com/Jerry7135/forworld-hills-tracker/main/photos/4f_1.jpg", "tab_name": "📸 AB棟空拍", "caption": "工地空拍照"},
+            {"url": "https://raw.githubusercontent.com/Jerry7135/forworld-hills-tracker/main/photos/4f_2.jpg", "tab_name": "📸 AB棟空拍", "caption": "工地空拍照"},
+            {"url": "https://raw.githubusercontent.com/Jerry7135/forworld-hills-tracker/main/photos/4f_3.jpg", "tab_name": "📸 金城交流道", "caption": "空拍照"}
         ],
         "開工報告": [
             {"url": "https://images.unsplash.com/photo-1589939705384-5185137a7f0f?q=80&w=600", "tab_name": "📸 動土典禮", "caption": "馥華之丘-光茵 盛大開工 (示意圖)"}
