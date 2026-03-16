@@ -20,7 +20,7 @@ with col_title:
 with col_counter:
     st.write("") # 稍微往下推一點點來對齊標題
     
-    # 🌟 採用徐杰大師驗證過的 hits.sh 穩定版計數器！
+    # 🌟 採用驗證過的 hits.sh 穩定版計數器！
     # ⚠️ 記得把下面的 forworld-hills.streamlit.app 換成你剛剛真正部署成功的那個網址喔！
     st.markdown('''
     <div style='display: flex; justify-content: flex-end; align-items: center; font-size: 15px; color: #666666; font-weight: bold;'>
