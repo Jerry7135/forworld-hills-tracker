@@ -167,12 +167,36 @@ if not df.empty:
         ]
     }
     
-    # 確保由新到舊排序，並重新發放 index
+    # ... (上面保留你原本的 MASTER_ALBUM_URL 總相簿大按鈕 與 MILESTONE_PHOTOS 字典) ...
+
+    # 🌟 提案 D：歷史紀錄一鍵篩選器
+    st.markdown("##### 🔍 快速篩選工程階段")
+    filter_option = st.radio(
+        "請選擇你想查看的進度範圍：",
+        ["🏢 全部顯示", "🌥️ 只看地上層", "🕳️ 只看地下室與基礎"],
+        horizontal=True, # 讓按鈕橫向排列，節省空間
+        label_visibility="collapsed" # 隱藏標題讓版面更簡潔
+    )
+    st.markdown("<br>", unsafe_allow_html=True)
+
+    # 確保由新到舊排序
     latest_df = df.sort_values(by='掛號日期', ascending=False).reset_index(drop=True)
     
+    # 🧠 根據使用者的選擇，動態過濾資料表
+    if filter_option == "🌥️ 只看地上層":
+        latest_df = latest_df[latest_df['勘驗項目'].str.contains('地上')]
+    elif filter_option == "🕳️ 只看地下室與基礎":
+        # 地下室階段的名稱可能包含「地下」、「基礎」、「支撐」或「開挖」，用 | (OR) 來聯集
+        latest_df = latest_df[latest_df['勘驗項目'].str.contains('地下|基礎|支撐|開挖|擋土')]
+
+    # 重新發放 index (讓最新的那一筆依然可以是 index 0，預設展開)
+    latest_df = latest_df.reset_index(drop=True)
+
+    # 接下來就是你原本的迴圈，把 latest_df 畫出來
     for index, row in latest_df.iterrows():
         is_latest = (index == 0)
-        title_prefix = "🌟 [最新進度] " if is_latest else "📌 "
+        
+        # ... (以下維持你原本的 with st.expander... 程式碼不動) ...
         
         with st.expander(f"{title_prefix}{row['掛號日期'].strftime('%Y-%m-%d')} - {row['勘驗項目']}", expanded=is_latest):
             
