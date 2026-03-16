@@ -29,7 +29,7 @@ with col_counter:
     </div>
     ''', unsafe_allow_html=True)
     
-st.info("本系統由 B6-8F 芳鄰 (Jerry) 開發，自動連線抓取新北市政府數據，提供最新工程進度推估。")
+st.info("本系統由 B6-8F 芳鄰 (Jerry) 開發，自動連線抓取新北市政府建管系統數據，提供最新工程進度紀錄。")
 
 # 換成你提供的建案渲染圖網址
 
