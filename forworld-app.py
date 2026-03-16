@@ -100,7 +100,7 @@ if not df.empty:
     days_to_delivery = (target_date - today).days
     if days_to_delivery < 0: days_to_delivery = 0
         
-    target_month_str = f"動態推估預計 {target_date.year} 年 {target_date.month} 月交屋"
+    target_month_str = f"程式動態推估預計 {target_date.year} 年 {target_date.month} 月交屋"
     
     # --- UI 儀表板顯示 ---
     col1, col2, col3 = st.columns(3)
