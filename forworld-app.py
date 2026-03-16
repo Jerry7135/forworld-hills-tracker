@@ -60,7 +60,7 @@ def load_data():
 df = load_data()
 
 # ==========================================
-# 🧠 3. 智慧交屋推估引擎 (地上層純淨取樣版)
+# 🧠 3. 智慧交屋推估引擎 (含視覺化進度條與倒數修復)
 # ==========================================
 if not df.empty:
     today = datetime.now()
@@ -83,13 +83,23 @@ if not df.empty:
     else:
         avg_days_per_floor = 28.3 
 
-    # --- 剩餘時間計算 ---
+    # --- 剩餘時間與交屋日計算 (💡 修正倒數不變的 Bug) ---
     remaining_floors = TOTAL_FLOORS - len(all_roof_slabs)
     if remaining_floors < 0: remaining_floors = 0
         
-    days_to_delivery = math.ceil(remaining_floors * avg_days_per_floor) + BUFFER_DAYS
+    # 1. 抓出「最新一次」的工程進度日期當作起算錨點
+    last_record_date = df['掛號日期'].max()
     
-    target_date = today + timedelta(days=days_to_delivery)
+    # 2. 從「最新進度日」開始推算，還需要多少天
+    days_needed_from_last = math.ceil(remaining_floors * avg_days_per_floor) + BUFFER_DAYS
+    
+    # 3. 算出絕對的「目標交屋日」
+    target_date = last_record_date + timedelta(days=days_needed_from_last)
+    
+    # 4. 今天的剩餘天數 = 目標交屋日 - 今天 (這樣每天都會自動減 1 天！)
+    days_to_delivery = (target_date - today).days
+    if days_to_delivery < 0: days_to_delivery = 0
+        
     target_month_str = f"預計 {target_date.year} 年 {target_date.month} 月交屋"
     
     # --- UI 儀表板顯示 ---
@@ -99,9 +109,24 @@ if not df.empty:
     with col2:
         st.metric("🏗️ 地上層平均工期", f"{avg_days_per_floor:.1f} 天/層")
     with col3:
-        st.metric("⏳ 預估交屋剩餘天數", f"{days_to_delivery} 天", target_month_str)
+        # 加一個向下的紅色小箭頭，讓大家感覺天數在變少
+        st.metric("⏳ 預估交屋剩餘天數", f"{days_to_delivery} 天", f"-1 天 (每日遞減)", delta_color="inverse")
         
-    # 📝 調整 4：加上預估時程免責聲明
+    # --- 🌟 提案 A：建築主體工程視覺化進度條 ---
+    st.markdown("<br>", unsafe_allow_html=True) # 加一點空白讓版面呼吸
+    
+    # 計算進度百分比 (避免超過 100% 導致程式報錯)
+    completed_floors = len(all_roof_slabs)
+    progress_ratio = completed_floors / TOTAL_FLOORS
+    if progress_ratio > 1.0: progress_ratio = 1.0 
+    progress_percent = int(progress_ratio * 100)
+
+    # 顯示文字與進度條
+    st.write(f"**🏢 主體結構工程進度：** 目前已完成 {completed_floors} 層 / 總計 {TOTAL_FLOORS} 層 **({progress_percent}%)**")
+    st.progress(progress_ratio) # 繪製 Streamlit 內建進度條
+    st.markdown(f"<div style='text-align: right; color: gray; font-size: 14px;'>{target_month_str}</div>", unsafe_allow_html=True)
+
+    # 📝 免責聲明
     st.caption("⚠️ **預估時程免責聲明**：以上預估交屋天數與日期，係由系統依據目前「地上層」實際過件進度動態推算，僅供芳鄰參考。**不保證實際完工日期，確切交屋時程請以馥華集團正式公告為準。**")
 
     st.markdown("---")
