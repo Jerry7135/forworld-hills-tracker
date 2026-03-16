@@ -178,10 +178,10 @@ if not df.empty:
             {"url": "https://raw.githubusercontent.com/Jerry7135/forworld-hills-tracker/main/photos/Base_2.jpg", "tab_name": "📸 城市之中 山水之間-晚霞", "caption": "瞬間的美感"}
         ],    
         "放樣、勘驗檢查符合規定者始准動工": [
-            {"url": "https://raw.githubusercontent.com/Jerry7135/forworld-hills-tracker/main/photos/Staking_4.jpg", "tab_name": "📸 地質勘查(一)", "caption": "工程視角"},
-            {"url": "https://raw.githubusercontent.com/Jerry7135/forworld-hills-tracker/main/photos/Staking_5.jpg", "tab_name": "📸 地質勘查(二)", "caption": "工程視角"},
-            {"url": "https://raw.githubusercontent.com/Jerry7135/forworld-hills-tracker/main/photos/Staking_3.jpg", "tab_name": "📸 重工具進駐(一)", "caption": "工程視角"},
-            {"url": "https://raw.githubusercontent.com/Jerry7135/forworld-hills-tracker/main/photos/Staking_6.jpg", "tab_name": "📸 重工具進駐(二)", "caption": "工程視角"}
+            {"url": "https://raw.githubusercontent.com/Jerry7135/forworld-hills-tracker/main/photos/Staking_5.jpg", "tab_name": "📸 地質勘查(一)", "caption": "工程視角"},
+            {"url": "https://raw.githubusercontent.com/Jerry7135/forworld-hills-tracker/main/photos/Staking_4.jpg", "tab_name": "📸 地質勘查(二)", "caption": "工程視角"},
+            {"url": "https://raw.githubusercontent.com/Jerry7135/forworld-hills-tracker/main/photos/Staking_6.jpg", "tab_name": "📸 重工具進駐(一)", "caption": "工程視角"},
+            {"url": "https://raw.githubusercontent.com/Jerry7135/forworld-hills-tracker/main/photos/Staking_3.jpg", "tab_name": "📸 重工具進駐(二)", "caption": "工程視角"}
         ],    
         "開工報告-": [
             {"url": "https://raw.githubusercontent.com/Jerry7135/forworld-hills-tracker/main/photos/start_1.jpg", "tab_name": "📸 動土典禮-致詞", "caption": "馥華之丘-光茵 盛大開工"},
