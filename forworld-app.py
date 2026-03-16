@@ -161,6 +161,11 @@ if not df.empty:
             {"url": "https://raw.githubusercontent.com/Jerry7135/forworld-hills-tracker/main/photos/4f_2.jpg", "tab_name": "📸 AB棟空拍 (二)", "caption": "工地空拍照 2"},
             {"url": "https://raw.githubusercontent.com/Jerry7135/forworld-hills-tracker/main/photos/4f_3.jpg", "tab_name": "📸 金城交流道", "caption": "空拍照"}
         ],
+
+        "基礎勘驗": [
+            {"url": "https://raw.githubusercontent.com/Jerry7135/forworld-hills-tracker/main/photos/Base_1.jpg", "tab_name": "📸 城真視角", "caption": "連續壁完成_準備開挖"},
+            {"url": "https://raw.githubusercontent.com/Jerry7135/forworld-hills-tracker/main/photos/Base_2.jpg", "tab_name": "📸 城市之中 山水之間-晚霞", "caption": "瞬間的美感"}
+        ],    
         "放樣、勘驗檢查符合規定者始准動工": [
             {"url": "https://raw.githubusercontent.com/Jerry7135/forworld-hills-tracker/main/photos/Staking_1.jpg", "tab_name": "📸 銷售中心拆除(一)", "caption": "拆除工程視角"},
             {"url": "https://raw.githubusercontent.com/Jerry7135/forworld-hills-tracker/main/photos/Staking_2.jpg", "tab_name": "📸 銷售中心拆除(二)", "caption": "拆除工程視角"},
