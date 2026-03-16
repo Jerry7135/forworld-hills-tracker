@@ -121,7 +121,7 @@ def job():
                    f"📌 項目：{latest_row['勘驗項目']}\n"
                    f"🚥 狀態：{latest_row['審核進度']}\n"
                    f"📅 日期：{latest_row['掛號日期']}\n"
-                   f"🌐 光茵築夢日記網頁：{website_url}") # 👈 這裡加上網址
+                   f"🌐 光茵築夢日記網頁：{https://forworld-hills-schedule.streamlit.app/}") # 👈 這裡加上網址
         else:
             msg = (f"\n🏢 【馥華之丘-光茵】出現新進度啦！\n"
                    f"📌 勘驗項目：{latest_row['勘驗項目']}\n"
