@@ -65,8 +65,17 @@ df = load_data()
 if not df.empty:
     today = datetime.now()
     
-    # --- 關鍵數據提取 ---
-    start_date = df['掛號日期'].min()
+   # --- 關鍵數據提取 ---
+    # 尋找「開工報告」那天的日期當作真正的起算點
+    start_record = df[df['勘驗項目'].str.contains('開工報告-', na=False)]
+    
+    if not start_record.empty:
+        # 如果有找到開工報告，就用那一天的日期
+        start_date = start_record['掛號日期'].iloc[0] 
+    else:
+        # 萬一發生異常沒比對到，我們設定一個絕對保底的真實開工日：2023年9月1日
+        start_date = datetime(2023, 9, 1)
+        
     days_since_start = (today - start_date).days
     
     all_roof_slabs = df[df['勘驗項目'].str.contains('頂版')]
