@@ -112,23 +112,23 @@ def job():
         latest_row = sorted_df.iloc[0]
         
         # 🎯 在這裡設定你未來的網頁網址 (現在可以先放個假網址或留空)
-        website_url = "https://你的光茵專屬網頁.com" 
+        website_url = "https://forworld-hills-schedule.streamlit.app/" 
 
         msg = ""
         if FORCE_TEST:
-            msg = (f"\n🔔 [系統手動測試] 親愛的芳鄰，讓我們一起紀錄與期待光茵的落成！\n"
+            msg = (f"\n🔔 [系統手動測試] 親愛的芳鄰大家好，讓我們一起紀錄與期待光茵的落成！\n"
                    f"✅ 目前最新進度：\n"
                    f"📌 項目：{latest_row['勘驗項目']}\n"
                    f"🚥 狀態：{latest_row['審核進度']}\n"
                    f"📅 日期：{latest_row['掛號日期']}\n"
-                   f"🌐 光茵築夢日記網頁：https://forworld-hills-schedule.streamlit.app/") # 👈 這裡加上網址
+                   f"🌐 光茵築夢日記網頁：{website_url}") # 👈 這裡加上網址
         else:
             msg = (f"\n🏢 【馥華之丘-光茵】出現新進度啦！\n"
                    f"📌 勘驗項目：{latest_row['勘驗項目']}\n"
                    f"🚥 審核進度：{latest_row['審核進度']}\n"
                    f"📅 掛號日期：{latest_row['掛號日期']}\n"
                    f"📊 目前累積：共 {len(new_df)} 筆\n"
-                   f"🌐 光茵築夢日記網頁：https://forworld-hills-schedule.streamlit.app/") # 👈 這裡加上網址
+                   f"🌐 光茵築夢日記網頁：{website_url}") # 👈 這裡加上網址
               
         send_line_message(msg)
         print(f"🎉 發現異動或測試！已推播：{latest_row['勘驗項目']}")
