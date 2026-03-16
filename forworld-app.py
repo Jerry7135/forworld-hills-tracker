@@ -2,24 +2,11 @@ import streamlit as st
 import pandas as pd
 from datetime import datetime, timedelta
 import math
-from streamlit_carousel import carousel
 
 # ==========================================
 # ⚙️ 網頁基本設定
 # ==========================================
 st.set_page_config(page_title="光茵築夢日記", page_icon="🏢", layout="wide")
-
-# 🌟 響應式優化：注入 CSS 防止電腦版直立相片被裁切或過大
-st.markdown("""
-<style>
-    /* 針對網頁中的圖片進行高度限制與比例保護 */
-    img {
-        max-height: 550px !important; /* 限制最大高度，確保不會超出電腦螢幕 */
-        object-fit: contain !important; /* 確保圖片完整顯示，自動留黑邊/白邊，絕對不裁切 */
-        margin: 0 auto; /* 讓直立圖片在寬版面中自動置中 */
-    }
-</style>
-""", unsafe_allow_html=True)
 
 # ==========================================
 # 👑 1. 視覺與迎賓區 (標題與右上角計數器)
@@ -233,20 +220,14 @@ if not df.empty:
                 if milestone_name in MILESTONE_PHOTOS and len(MILESTONE_PHOTOS[milestone_name]) > 0:
                     photos = MILESTONE_PHOTOS[milestone_name]
                     
-                    # 🌟 將照片轉換成自動輪播套件看得懂的格式
-                    carousel_items = []
-                    for i, p in enumerate(photos):
-                        carousel_items.append(
-                            dict(
-                                title=p["tab_name"], # 顯示在輪播圖上的大標題
-                                text=p["caption"],   # 顯示在輪播圖上的小說明
-                                img=p["url"]         # 你的 GitHub 照片網址
-                            )
-                        )
+                    # 建立分頁 (Tabs) 來達成輪播效果
+                    tab_names = [p["tab_name"] for p in photos]
+                    tabs = st.tabs(tab_names)
                     
-                    # 🚀 啟動超炫的自動輪播 (width=1 代表自動適應網頁寬度)
-                    carousel(items=carousel_items, width=1)
-              
+                    # 依序把照片塞進對應的分頁裡
+                    for i, tab in enumerate(tabs):
+                        with tab:
+                            st.image(photos[i]["url"], caption=photos[i]["caption"], use_container_width=True)
                 else:
                     # 如果沒有設定相片，就顯示一張極簡的暫存圖，保持版面整齊
                     st.image("https://via.placeholder.com/800x400.png?text=Forworld+Hills+Construction", 
