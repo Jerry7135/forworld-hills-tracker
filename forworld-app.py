@@ -161,6 +161,12 @@ if not df.empty:
             {"url": "https://raw.githubusercontent.com/Jerry7135/forworld-hills-tracker/main/photos/4f_2.jpg", "tab_name": "📸 AB棟空拍 (二)", "caption": "工地空拍照 2"},
             {"url": "https://raw.githubusercontent.com/Jerry7135/forworld-hills-tracker/main/photos/4f_3.jpg", "tab_name": "📸 金城交流道", "caption": "空拍照"}
         ],
+        "放樣、勘驗檢查符合規定者始准動工": [
+            {"url": "https://raw.githubusercontent.com/Jerry7135/forworld-hills-tracker/main/photos/Staking_1.jpg", "tab_name": "📸 銷售中心拆除(一)", "caption": "拆除工程視角"},
+            {"url": "https://raw.githubusercontent.com/Jerry7135/forworld-hills-tracker/main/photos/Staking_2.jpg", "tab_name": "📸 銷售中心拆除(二)", "caption": "拆除工程視角"},
+            {"url": "https://raw.githubusercontent.com/Jerry7135/forworld-hills-tracker/main/photos/Staking_3.jpg", "tab_name": "📸 地質勘查", "caption": "工程視角"},
+            {"url": "https://raw.githubusercontent.com/Jerry7135/forworld-hills-tracker/main/photos/Staking_4.jpg", "tab_name": "📸 重工具進駐", "caption": "工程視角"}
+        ],    
         "開工報告-": [
             {"url": "https://raw.githubusercontent.com/Jerry7135/forworld-hills-tracker/main/photos/start_1.jpg", "tab_name": "📸 動土典禮-致詞", "caption": "馥華之丘-光茵 盛大開工"},
             {"url": "https://raw.githubusercontent.com/Jerry7135/forworld-hills-tracker/main/photos/start_2.jpg", "tab_name": "📸 動土典禮-祈福", "caption": "馥華之丘-光茵 盛大開工"}
