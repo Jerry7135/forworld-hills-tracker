@@ -157,13 +157,13 @@ if not df.empty:
     # 🖼️ 【精選輪播照片區】: 放 1~3 張最精華的照片，網頁直接顯示
     MILESTONE_PHOTOS = {
         "地上4樓頂版勘驗": [
-            {"url": "https://raw.githubusercontent.com/Jerry7135/forworld-hills-tracker/main/photos/4f_1.jpg", "tab_name": "📸 AB棟空拍", "caption": "工地空拍照"},
-            {"url": "https://raw.githubusercontent.com/Jerry7135/forworld-hills-tracker/main/photos/4f_2.jpg", "tab_name": "📸 AB棟空拍", "caption": "工地空拍照"},
+            {"url": "https://raw.githubusercontent.com/Jerry7135/forworld-hills-tracker/main/photos/4f_1.jpg", "tab_name": "📸 AB棟空拍 (一)", "caption": "工地空拍照 1"},
+            {"url": "https://raw.githubusercontent.com/Jerry7135/forworld-hills-tracker/main/photos/4f_2.jpg", "tab_name": "📸 AB棟空拍 (二)", "caption": "工地空拍照 2"},
             {"url": "https://raw.githubusercontent.com/Jerry7135/forworld-hills-tracker/main/photos/4f_3.jpg", "tab_name": "📸 金城交流道", "caption": "空拍照"}
         ],
         "開工報告": [
-            {"url": "https://raw.githubusercontent.com/Jerry7135/forworld-hills-tracker/main/photos/start_1.jpg", "tab_name": "📸 動土典禮", "caption": "馥華之丘-光茵 盛大開工 "},
-            {"url": "https://raw.githubusercontent.com/Jerry7135/forworld-hills-tracker/main/photos/start_2.jpg", "tab_name": "📸 動土典禮", "caption": "馥華之丘-光茵 盛大開工 "}
+            {"url": "https://raw.githubusercontent.com/Jerry7135/forworld-hills-tracker/main/photos/start_1.jpg", "tab_name": "📸 動土典禮-致詞", "caption": "馥華之丘-光茵 盛大開工"},
+            {"url": "https://raw.githubusercontent.com/Jerry7135/forworld-hills-tracker/main/photos/start_2.jpg", "tab_name": "📸 動土典禮-祈福", "caption": "馥華之丘-光茵 盛大開工"}
         ]
     }
     
