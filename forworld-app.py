@@ -164,6 +164,11 @@ if not df.empty:
         "開工報告-": [
             {"url": "https://raw.githubusercontent.com/Jerry7135/forworld-hills-tracker/main/photos/start_1.jpg", "tab_name": "📸 動土典禮-致詞", "caption": "馥華之丘-光茵 盛大開工"},
             {"url": "https://raw.githubusercontent.com/Jerry7135/forworld-hills-tracker/main/photos/start_2.jpg", "tab_name": "📸 動土典禮-祈福", "caption": "馥華之丘-光茵 盛大開工"}
+        ],    
+        "施工計畫書": [
+            {"url": "https://raw.githubusercontent.com/Jerry7135/forworld-hills-tracker/main/photos/Pre-sale house_1.jpg", "tab_name": "📸 預售屋模型(一)", "caption": "青福街視角"},
+            {"url": "https://raw.githubusercontent.com/Jerry7135/forworld-hills-tracker/main/photos/Pre-sale house_2.jpg", "tab_name": "📸 預售屋模型(二)", "caption": "青仁路視角"},
+            {"url": "https://raw.githubusercontent.com/Jerry7135/forworld-hills-tracker/main/photos/Pre-sale house_3.jpg", "tab_name": "📸 展示中心-光影", "caption": "馥華之丘-光茵銷售中心"}
         ]
     }
     
