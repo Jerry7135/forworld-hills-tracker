@@ -29,7 +29,7 @@ with col_counter:
     </div>
     ''', unsafe_allow_html=True)
     
-st.info("本系統由 B6 芳鄰 (Jerry) 開發，自動連線新北市政府數據，提供最新工程進度推估。")
+st.info("本系統由 B6-8F 芳鄰 (Jerry) 開發，自動連線抓取新北市政府數據，提供最新工程進度推估。")
 
 # 換成你提供的建案渲染圖網址
 
@@ -100,7 +100,7 @@ if not df.empty:
     days_to_delivery = (target_date - today).days
     if days_to_delivery < 0: days_to_delivery = 0
         
-    target_month_str = f"預計 {target_date.year} 年 {target_date.month} 月交屋"
+    target_month_str = f"動態推估預計 {target_date.year} 年 {target_date.month} 月交屋"
     
     # --- UI 儀表板顯示 ---
     col1, col2, col3 = st.columns(3)
@@ -112,24 +112,35 @@ if not df.empty:
         # 加一個向下的紅色小箭頭，讓大家感覺天數在變少
         st.metric("⏳ 預估交屋剩餘天數", f"{days_to_delivery} 天", f"-1 天 (每日遞減)", delta_color="inverse")
         
-    # --- 🌟 提案 A：建築主體工程視覺化進度條 ---
+    # --- 🌟 提案 A：建築主體工程視覺化進度條 (地上層精準版) ---
     st.markdown("<br>", unsafe_allow_html=True) # 加一點空白讓版面呼吸
     
-    # 計算進度百分比 (避免超過 100% 導致程式報錯)
-    completed_floors = len(all_roof_slabs)
-    progress_ratio = completed_floors / TOTAL_FLOORS
+    # 修正：只計算「地上層」的進度百分比，對齊總樓層 25 樓
+    completed_above_floors = len(above_ground_slabs)
+    progress_ratio = completed_above_floors / TOTAL_FLOORS
     if progress_ratio > 1.0: progress_ratio = 1.0 
     progress_percent = int(progress_ratio * 100)
+    
+    # 計算地下室蓋了幾層 (總頂版數 - 地上頂版數)
+    underground_slabs = len(all_roof_slabs) - completed_above_floors
 
     # 顯示文字與進度條
-    st.write(f"**🏢 主體結構工程進度：** 目前已完成 {completed_floors} 層 / 總計 {TOTAL_FLOORS} 層 **({progress_percent}%)**")
-    st.progress(progress_ratio) # 繪製 Streamlit 內建進度條
-    st.markdown(f"<div style='text-align: right; color: gray; font-size: 14px;'>{target_month_str}</div>", unsafe_allow_html=True)
+    st.write(f"**🏢 地上主體結構進度：** 目前已蓋至 **地上 {completed_above_floors} 層** / 總計 {TOTAL_FLOORS} 層 **({progress_percent}%)**")
+    st.progress(progress_ratio) # 繪製 Streamlit 內建綠色進度條
+    
+    # 排版巧思：左邊放地下室備註，右邊放交屋年月
+    col_sub1, col_sub2 = st.columns([1, 1])
+    with col_sub1:
+        if underground_slabs > 0:
+            st.markdown(f"<div style='color: #888888; font-size: 13px;'>*(註：已完成 {underground_slabs} 層地下室結構)*</div>", unsafe_allow_html=True)
+    with col_sub2:
+        st.markdown(f"<div style='text-align: right; color: gray; font-size: 14px; font-weight: bold;'>{target_month_str}</div>", unsafe_allow_html=True)
 
     # 📝 免責聲明
     st.caption("⚠️ **預估時程免責聲明**：以上預估交屋天數與日期，係由系統依據目前「地上層」實際過件進度動態推算，僅供芳鄰參考。**不保證實際完工日期，確切交屋時程請以馥華集團正式公告為準。**")
 
     st.markdown("---")
+    
 # ==========================================
     # 📸 4. 施工紀錄與相簿派發中心
     # ==========================================
