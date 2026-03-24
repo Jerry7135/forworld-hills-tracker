@@ -8,6 +8,18 @@ import math
 # ==========================================
 st.set_page_config(page_title="光茵築夢日記", page_icon="🏢", layout="wide")
 
+
+# 🌟 UI 質感升級：全站圖片自動加上圓角
+st.markdown("""
+<style>
+    /* 讓所有的圖片都有 12px 的圓角 */
+    img {
+        border-radius: 12px; 
+    }
+</style>
+""", unsafe_allow_html=True)
+
+
 # ==========================================
 # 👑 1. 視覺與迎賓區 (標題與右上角計數器)
 # ==========================================
