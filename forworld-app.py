@@ -230,9 +230,10 @@ if not df.empty:
                         with tab:
                             st.image(photos[i]["url"], caption=photos[i]["caption"], use_container_width=True)
                 else:
-                    # 如果沒有設定相片，就顯示一張極簡的暫存圖，保持版面整齊
-                    st.image("https://via.placeholder.com/800x400.png?text=Forworld+Hills+Construction", 
-                             caption=f"{milestone_name} (暫無精選相片)", use_container_width=True)
+                    # 🌟 質感優化：用乾淨的文字取代大塊的灰色假圖
+                    st.info(f"🏗️ 營造團隊全力施工中，【{milestone_name}】階段暫無專屬影像紀錄。")
+                            
+            
 
 else:
     st.warning("⚠️ 儀表板連線中，請確認 GitHub 專案中的 history.csv 是否存在。")
