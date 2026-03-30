@@ -243,7 +243,7 @@ if not df.empty:
                             st.image(photos[i]["url"], caption=photos[i]["caption"], use_container_width=True)
                 else:
                     # 🌟 質感優化：用乾淨的文字取代大塊的灰色假圖
-                    st.info(f"🏗️ 【{milestone_name}】此工程階段暫無專屬影像紀錄。")
+                    st.info(f"🏗️ 【{milestone_name}】此工程階段暫無上傳專屬影像紀錄。")
                             
             
 
