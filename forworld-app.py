@@ -181,7 +181,8 @@ if not df.empty:
 
         "地上5樓頂版勘驗": [
             {"url": "https://raw.githubusercontent.com/Jerry7135/forworld-hills-tracker/main/photos/5f-a.jpg", "tab_name": "📸 A棟空拍 (一)", "caption": "青隆街視角(芳鄰-丘丘蛙提供)"},
-            {"url": "https://raw.githubusercontent.com/Jerry7135/forworld-hills-tracker/main/photos/5f-b.jpg", "tab_name": "📸 B棟空拍 (二)", "caption": "青仁路視角(芳鄰-丘丘蛙提供)"}
+            {"url": "https://raw.githubusercontent.com/Jerry7135/forworld-hills-tracker/main/photos/5f-b.jpg", "tab_name": "📸 B棟空拍 (二)", "caption": "青仁路視角(芳鄰-丘丘蛙提供)"},
+            {"url": "https://raw.githubusercontent.com/Jerry7135/forworld-hills-tracker/main/photos/5f-c.jpg", "tab_name": "📸 AB棟260410空拍", "caption": "四季基地空拍視角(芳鄰-丘丘蛙提供)"}
         ],
      
         "地上4樓頂版勘驗": [
