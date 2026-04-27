@@ -178,6 +178,12 @@ if not df.empty:
     # 🖼️ 【精選輪播照片區】: 放 1~3 張最精華的照片，網頁直接顯示
     MILESTONE_PHOTOS = {
         
+        "地上6樓頂版勘驗": [
+            {"url": "https://raw.githubusercontent.com/Jerry7135/forworld-hills-tracker/main/photos/6f-a.jpg", "tab_name": "📸 AB棟空拍260426 (一)", "caption": "青仁路視角(芳鄰-丘丘蛙提供)"},
+            {"url": "https://raw.githubusercontent.com/Jerry7135/forworld-hills-tracker/main/photos/6f-b.jpg", "tab_name": "📸 AB棟空拍260426 (二)", "caption": "青福街交叉路口視角(芳鄰-丘丘蛙提供)"},
+            {"url": "https://raw.githubusercontent.com/Jerry7135/forworld-hills-tracker/main/photos/6f-c.jpg", "tab_name": "📸 260426空拍(三)", "caption": "金城交流道空拍(芳鄰-丘丘蛙提供)"}
+        ],
+
 
         "地上5樓頂版勘驗": [
             {"url": "https://raw.githubusercontent.com/Jerry7135/forworld-hills-tracker/main/photos/5f-a.jpg", "tab_name": "📸 A棟空拍260331 (一)", "caption": "青隆街視角(芳鄰-丘丘蛙提供)"},
