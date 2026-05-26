@@ -107,31 +107,37 @@ def job():
         has_update = True
 
     if has_update:
+        # 1. 不管什麼狀態，只要有更新就先存檔，確保網頁端資料永遠是最新的
         new_df.to_csv(file_name, index=False, encoding='utf-8-sig')
         sorted_df = new_df.sort_values(by='掛號日期', ascending=False)
         latest_row = sorted_df.iloc[0]
         
-        # 🎯 在這裡設定你未來的網頁網址 (現在可以先放個假網址或留空)
         website_url = "https://forworld-hills-schedule.streamlit.app/" 
 
-        msg = ""
-        if FORCE_TEST:
-            msg = (f"\n🔔 [系統手動測試] 親愛的芳鄰~大家好，讓我們一起紀錄與期待光茵的落成！\n"
-                   f"✅ 目前最新進度：\n"
-                   f"📌 項目：{latest_row['勘驗項目']}\n"
-                   f"🚥 狀態：{latest_row['審核進度']}\n"
-                   f"📅 日期：{latest_row['掛號日期']}\n"
-                   f"🌐 光茵築夢日記網頁：{website_url}") # 👈 這裡加上網址
+        # 🟢 2. 新增的守門員：只有當狀態包含「同意備查」或是「手動測試」時，才發送 LINE
+        if "同意備查" in latest_row['審核進度'] or FORCE_TEST:
+            msg = ""
+            if FORCE_TEST:
+                msg = (f"\n🔔 [系統手動測試] 親愛的芳鄰~大家好，讓我們一起紀錄與期待光茵的落成！\n"
+                       f"✅ 目前最新進度：\n"
+                       f"📌 項目：{latest_row['勘驗項目']}\n"
+                       f"🚥 狀態：{latest_row['審核進度']}\n"
+                       f"📅 日期：{latest_row['掛號日期']}\n"
+                       f"🌐 光茵築夢日記網頁：{website_url}")
+            else:
+                msg = (f"\n🏢 【馥華之丘-光茵】出現新進度啦！\n"
+                       f"📌 勘驗項目：{latest_row['勘驗項目']}\n"
+                       f"🚥 審核進度：{latest_row['審核進度']}\n"
+                       f"📅 掛號日期：{latest_row['掛號日期']}\n"
+                       f"📊 目前累積：共 {len(new_df)} 筆\n"
+                       f"🌐 光茵築夢日記網頁：{website_url}")
+                  
+            send_line_message(msg)
+            print(f"🎉 發現異動或測試！已推播：{latest_row['勘驗項目']} ({latest_row['審核進度']})")
         else:
-            msg = (f"\n🏢 【馥華之丘-光茵】出現新進度啦！\n"
-                   f"📌 勘驗項目：{latest_row['勘驗項目']}\n"
-                   f"🚥 審核進度：{latest_row['審核進度']}\n"
-                   f"📅 掛號日期：{latest_row['掛號日期']}\n"
-                   f"📊 目前累積：共 {len(new_df)} 筆\n"
-                   f"🌐 光茵築夢日記網頁：{website_url}") # 👈 這裡加上網址
-              
-        send_line_message(msg)
-        print(f"🎉 發現異動或測試！已推播：{latest_row['勘驗項目']}")
+            # 🔇 3. 如果只是「待審」，就不發 LINE，只印出 Log 紀錄
+            print(f"🤫 抓到新進度 ({latest_row['審核進度']})，但為節省額度，本次不發送 LINE 通知。")
+
     else:
         print("💤 沒有新增進度，不發送通知。")
 
