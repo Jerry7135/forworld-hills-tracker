@@ -178,6 +178,12 @@ if not df.empty:
     # 🖼️ 【精選輪播照片區】: 放 1~3 張最精華的照片，網頁直接顯示
     MILESTONE_PHOTOS = {
 
+
+        "地上8樓頂版勘驗": [
+        
+            {"url": "https://raw.githubusercontent.com/Jerry7135/forworld-hills-tracker/main/photos/8f-a.jpg", "tab_name": "📸 260531街拍(一)", "caption": "清水路視角"}
+        ],  
+        
         "地上7樓頂版勘驗": [
         
             {"url": "https://raw.githubusercontent.com/Jerry7135/forworld-hills-tracker/main/photos/6f-d.jpg", "tab_name": "📸 260502空拍(四)", "caption": "青仁路視角(芳鄰-丘丘蛙提供)"},
