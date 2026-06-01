@@ -118,7 +118,7 @@ def job():
         if "同意備查" in latest_row['審核進度'] or FORCE_TEST:
             msg = ""
             if FORCE_TEST:
-                msg = (f"\n🔔 [系統手動測試] 親愛的芳鄰~大家好，讓我們一起紀錄與期待光茵的落成！\n"
+                msg = (f"\n🏢 【馥華之丘-光茵】出現新進度啦！\n"
                        f"✅ 目前最新進度：\n"
                        f"📌 項目：{latest_row['勘驗項目']}\n"
                        f"🚥 狀態：{latest_row['審核進度']}\n"
