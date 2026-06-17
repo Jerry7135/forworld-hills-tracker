@@ -179,6 +179,12 @@ if not df.empty:
     MILESTONE_PHOTOS = {
 
 
+        "地上9樓頂版勘驗": [
+            {"url": "https://raw.githubusercontent.com/Jerry7135/forworld-hills-tracker/main/photos/9f-a.jpg", "tab_name": "📸 AB棟空拍260613 (一)", "caption": "青福街視角(芳鄰-丘丘蛙提供)"},
+            {"url": "https://raw.githubusercontent.com/Jerry7135/forworld-hills-tracker/main/photos/9f-b.jpg", "tab_name": "📸 AB棟空拍260613 (二)", "caption": "青仁路交視角(芳鄰-丘丘蛙提供)"},
+            {"url": "https://raw.githubusercontent.com/Jerry7135/forworld-hills-tracker/main/photos/9f-c.jpg", "tab_name": "📸 260613空拍(三)", "caption": "金城交流道空拍(芳鄰-丘丘蛙提供)"}
+        ],
+
         "地上8樓頂版勘驗": [
         
             {"url": "https://raw.githubusercontent.com/Jerry7135/forworld-hills-tracker/main/photos/8f-a.jpg", "tab_name": "📸 260601街拍(一)", "caption": "清水路96巷視角"}
