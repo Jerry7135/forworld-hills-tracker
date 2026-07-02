@@ -179,7 +179,7 @@ if not df.empty:
     MILESTONE_PHOTOS = {
 
         "地上10樓頂版勘驗": [
-            {"url": "https://raw.githubusercontent.com/Jerry7135/forworld-hills-tracker/main/photos/10f-a.jpg", "tab_name": "📸 260701街拍", "caption": "青仁路停車場視角(芳鄰-Jerry提供)"}
+            {"url": "https://raw.githubusercontent.com/Jerry7135/forworld-hills-tracker/main/photos/10f-a.jpg", "tab_name": "📸 260701街拍", "caption": "青仁路停車場視角(芳鄰-Jerry拍攝)"}
         ],
 
         "地上9樓頂版勘驗": [
@@ -222,25 +222,25 @@ if not df.empty:
         ],
 
         "基礎勘驗": [
-            {"url": "https://raw.githubusercontent.com/Jerry7135/forworld-hills-tracker/main/photos/Base_1.jpg", "tab_name": "📸 城真視角", "caption": "連續壁完成_準備開挖"},
-            {"url": "https://raw.githubusercontent.com/Jerry7135/forworld-hills-tracker/main/photos/Base_2.jpg", "tab_name": "📸 城市之中 山水之間-晚霞", "caption": "瞬間的美感"}
+            {"url": "https://raw.githubusercontent.com/Jerry7135/forworld-hills-tracker/main/photos/Base_1.jpg", "tab_name": "📸 城真視角", "caption": "連續壁完成_準備開挖(芳鄰-Jerry拍攝)"},
+            {"url": "https://raw.githubusercontent.com/Jerry7135/forworld-hills-tracker/main/photos/Base_2.jpg", "tab_name": "📸 城市之中 山水之間-晚霞", "caption": "瞬間的美感(芳鄰-Jerry拍攝)"}
         ],    
         "放樣、勘驗檢查符合規定者始准動工": [
             {"url": "https://raw.githubusercontent.com/Jerry7135/forworld-hills-tracker/main/photos/Staking_5.jpg", "tab_name": "📸 地質勘查(一)", "caption": "工程視角"},
             {"url": "https://raw.githubusercontent.com/Jerry7135/forworld-hills-tracker/main/photos/Staking_4.jpg", "tab_name": "📸 地質勘查(二)", "caption": "工程視角"},
-            {"url": "https://raw.githubusercontent.com/Jerry7135/forworld-hills-tracker/main/photos/Staking_3.jpg", "tab_name": "📸 重工具進駐(一)", "caption": "工程視角"},
-            {"url": "https://raw.githubusercontent.com/Jerry7135/forworld-hills-tracker/main/photos/Staking_6.jpg", "tab_name": "📸 重工具進駐(二)", "caption": "工程視角"}
+            {"url": "https://raw.githubusercontent.com/Jerry7135/forworld-hills-tracker/main/photos/Staking_3.jpg", "tab_name": "📸 重工具進駐(一)", "caption": "工程視角(芳鄰-Jerry拍攝)"},
+            {"url": "https://raw.githubusercontent.com/Jerry7135/forworld-hills-tracker/main/photos/Staking_6.jpg", "tab_name": "📸 重工具進駐(二)", "caption": "工程視角(芳鄰-Jerry拍攝)"}
         ],    
         "開工報告-": [
-            {"url": "https://raw.githubusercontent.com/Jerry7135/forworld-hills-tracker/main/photos/start_1.jpg", "tab_name": "📸 動土典禮-致詞", "caption": "馥華之丘-光茵 盛大開工"},
-            {"url": "https://raw.githubusercontent.com/Jerry7135/forworld-hills-tracker/main/photos/start_2.jpg", "tab_name": "📸 動土典禮-祈福", "caption": "馥華之丘-光茵 盛大開工"},
-            {"url": "https://raw.githubusercontent.com/Jerry7135/forworld-hills-tracker/main/photos/Staking_1.jpg", "tab_name": "📸 銷售中心拆除(一)", "caption": "拆除工程視角"},
-            {"url": "https://raw.githubusercontent.com/Jerry7135/forworld-hills-tracker/main/photos/Staking_2.jpg", "tab_name": "📸 銷售中心拆除(二)", "caption": "拆除工程視角"}
+            {"url": "https://raw.githubusercontent.com/Jerry7135/forworld-hills-tracker/main/photos/start_1.jpg", "tab_name": "📸 動土典禮-致詞", "caption": "馥華之丘-光茵 盛大開工(芳鄰-Jerry拍攝)"},
+            {"url": "https://raw.githubusercontent.com/Jerry7135/forworld-hills-tracker/main/photos/start_2.jpg", "tab_name": "📸 動土典禮-祈福", "caption": "馥華之丘-光茵 盛大開工(芳鄰-Jerry拍攝)"},
+            {"url": "https://raw.githubusercontent.com/Jerry7135/forworld-hills-tracker/main/photos/Staking_1.jpg", "tab_name": "📸 銷售中心拆除(一)", "caption": "拆除工程視角(芳鄰-Jerry拍攝)"},
+            {"url": "https://raw.githubusercontent.com/Jerry7135/forworld-hills-tracker/main/photos/Staking_2.jpg", "tab_name": "📸 銷售中心拆除(二)", "caption": "拆除工程視角(芳鄰-Jerry拍攝)"}
         ],    
         "施工計畫書": [
-            {"url": "https://raw.githubusercontent.com/Jerry7135/forworld-hills-tracker/main/photos/Pre-sale house_1.jpg", "tab_name": "📸 預售屋模型(一)", "caption": "青福街視角"},
-            {"url": "https://raw.githubusercontent.com/Jerry7135/forworld-hills-tracker/main/photos/Pre-sale house_2.jpg", "tab_name": "📸 預售屋模型(二)", "caption": "青仁路視角"},
-            {"url": "https://raw.githubusercontent.com/Jerry7135/forworld-hills-tracker/main/photos/Pre-sale house_3.jpg", "tab_name": "📸 展示中心-光影", "caption": "馥華之丘-光茵銷售中心"}
+            {"url": "https://raw.githubusercontent.com/Jerry7135/forworld-hills-tracker/main/photos/Pre-sale house_1.jpg", "tab_name": "📸 預售屋模型(一)", "caption": "青福街視角(芳鄰-Jerry拍攝)"},
+            {"url": "https://raw.githubusercontent.com/Jerry7135/forworld-hills-tracker/main/photos/Pre-sale house_2.jpg", "tab_name": "📸 預售屋模型(二)", "caption": "青仁路視角(芳鄰-Jerry拍攝)"},
+            {"url": "https://raw.githubusercontent.com/Jerry7135/forworld-hills-tracker/main/photos/Pre-sale house_3.jpg", "tab_name": "📸 展示中心-光影", "caption": "馥華之丘-光茵銷售中心(芳鄰-Jerry拍攝)"}
         ]
     }
     
