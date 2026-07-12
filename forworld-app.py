@@ -2,6 +2,8 @@ import streamlit as st
 import pandas as pd
 from datetime import datetime, timedelta
 import math
+import re
+import altair as alt
 
 # ==========================================
 # ⚙️ 網頁基本設定
@@ -159,6 +161,46 @@ if not df.empty:
 
     # 📝 免責聲明
     st.caption("⚠️ **預估時程免責聲明**：以上預估交屋天數與日期，係由系統依據目前「地上層」實際過件進度動態推算，僅供芳鄰參考。**不保證實際完工日期，確切交屋時程請以馥華集團正式公告為準。**")
+
+    # ==========================================
+    # 📈 3.5 施工爬升曲線 (日期 vs 樓層)
+    # ==========================================
+    def parse_floor(item):
+        """從勘驗項目文字解析樓層：地下N樓 -> -N，地上N樓 -> N"""
+        m = re.search(r'地下(\d+)樓', str(item))
+        if m:
+            return -int(m.group(1))
+        m = re.search(r'地上(\d+)樓', str(item))
+        if m:
+            return int(m.group(1))
+        return None
+
+    slab_df = df[df['勘驗項目'].str.contains('頂版', na=False)].copy()
+    slab_df['樓層'] = slab_df['勘驗項目'].apply(parse_floor)
+    slab_df = slab_df.dropna(subset=['樓層'])
+
+    if len(slab_df) >= 2:
+        st.markdown("<br>", unsafe_allow_html=True)
+        st.write("**📈 施工爬升曲線**（每個點為一次頂版勘驗，線越陡代表蓋得越快）")
+
+        base = alt.Chart(slab_df).encode(
+            x=alt.X('掛號日期:T', title='掛號日期', axis=alt.Axis(format='%Y/%m')),
+            y=alt.Y('樓層:Q', title='樓層',
+                    axis=alt.Axis(labelExpr="datum.value < 0 ? 'B' + -datum.value : datum.value + 'F'")),
+            tooltip=[
+                alt.Tooltip('掛號日期:T', title='掛號日期', format='%Y-%m-%d'),
+                alt.Tooltip('勘驗項目:N', title='勘驗項目'),
+                alt.Tooltip('審核進度:N', title='審核進度')
+            ]
+        )
+        line = base.mark_line(color='#79C83D', strokeWidth=3)
+        points = base.mark_point(color='#79C83D', filled=True, size=80)
+        # 地平面虛線 (0 樓)，上方為地上層、下方為地下室
+        ground = alt.Chart(pd.DataFrame({'y': [0]})).mark_rule(
+            color='#888888', strokeDash=[4, 4]).encode(y='y:Q')
+
+        st.altair_chart((ground + line + points).properties(height=320), use_container_width=True)
+        st.caption("🟢 灰色虛線為地平面：下方為地下室開挖與結構期，上方為地上層爬升期。滑鼠移到點上可看各樓層勘驗細節。")
 
     st.markdown("---")
     
