@@ -184,7 +184,7 @@ if not df.empty:
         st.write("**📈 施工爬升曲線**（每個點為一次頂版勘驗，線越陡代表蓋得越快）")
 
         base = alt.Chart(slab_df).encode(
-            x=alt.X('掛號日期:T', title='掛號日期', axis=alt.Axis(format='%Y/%m')),
+            x=alt.X('掛號日期:T', title='掛號日期', axis=alt.Axis(format='%Y/%m', tickCount='month')),
             y=alt.Y('樓層:Q', title='樓層',
                     axis=alt.Axis(labelExpr="datum.value < 0 ? 'B' + -datum.value : datum.value + 'F'")),
             tooltip=[
