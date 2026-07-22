@@ -221,7 +221,7 @@ if not df.empty:
     MILESTONE_PHOTOS = {
 
         "地上11樓頂版勘驗": [
-            {"url": "https://raw.githubusercontent.com/Jerry7135/forworld-hills-tracker/main/photos/11f-a.jpg", "tab_name": "📸 260722空拍", "caption": "路口空拍視角(芳鄰-丘丘蛙提供)"}
+            {"url": "https://raw.githubusercontent.com/Jerry7135/forworld-hills-tracker/main/photos/11f-a.jpg", "tab_name": "📸 260712空拍", "caption": "路口空拍視角(芳鄰-丘丘蛙提供)"}
         ],
         
         "地上10樓頂版勘驗": [
