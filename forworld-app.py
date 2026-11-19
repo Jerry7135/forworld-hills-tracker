@@ -1,350 +1,462 @@
-import streamlit as st
-import pandas as pd
-from datetime import datetime, timedelta
-import math
+import html
 import re
+from datetime import datetime, timedelta, timezone
+from urllib.parse import quote
+
 import altair as alt
+import pandas as pd
+import streamlit as st
 
 # ==========================================
-# ⚙️ 網頁基本設定
+# ⚙️ 設定區：換 GitHub 專案或調整內容，只要改這裡
 # ==========================================
-st.set_page_config(page_title="光茵築夢日記", page_icon="🏢", layout="wide")
+GITHUB_USER = "Jerry7135"
+GITHUB_REPO = "forworld-hills-tracker"      # 👉 新測試專案請改成新的 repo 名稱
+GITHUB_BRANCH = "main"
 
+SITE_TITLE = "光茵築夢日記"
+PROJECT_NAME = "馥華之丘-光茵"
+AUTHOR_NOTE = "本站由 B6-8F 芳鄰 (Jerry) 開發維護"
 
-# 🌟 UI 質感升級：全站圖片自動加上圓角
+TOTAL_FLOORS = 25          # 地上總樓層
+BASEMENT_FLOORS = 4        # 地下樓層數
+FALLBACK_START_DATE = datetime(2023, 9, 1)   # 找不到「開工報告」時的開工日
+
+MASTER_ALBUM_URL = "https://drive.google.com/drive/folders/1jgaPFGbTZS707tToVchHkqN5Xuu7gJ98?usp=sharing"
+LINE_ADD_FRIEND_URL = ""   # 👉 填入 LINE 官方帳號「加好友」連結 (例如 https://lin.ee/xxxx)，留空就不顯示按鈕
+COUNTER_KEY = "forworld-hills.streamlit.app"  # 瀏覽計數器的名稱，維持不變就會接續原本的累計數
+
+# 是否顯示「地上結構體」的參考完成月份 (只推估結構體，不推估交屋)
+SHOW_STRUCTURE_ESTIMATE = True
+
+# 照片是否透過 images.weserv.nl 自動縮圖 (大幅加快手機載入)；若圖片出不來可改成 False
+USE_IMAGE_PROXY = True
+
+# 結構體之後的階段：建管勘驗資料抓不到，請手動更新狀態
+#   status 可填："todo" (尚未開始) / "doing" (進行中) / "done" (已完成)
+#   note 可填任意文字，例如 "2027-03 開始"，留空就不顯示
+LATER_STAGES = [
+    {"name": "外牆磁磚",     "status": "todo", "note": ""},
+    {"name": "內裝與機電",   "status": "todo", "note": ""},
+    {"name": "拆除鷹架",     "status": "todo", "note": ""},
+    {"name": "取得使用執照", "status": "todo", "note": ""},
+    {"name": "交屋",         "status": "todo", "note": ""},
+]
+
+RAW_BASE = f"https://raw.githubusercontent.com/{GITHUB_USER}/{GITHUB_REPO}/{GITHUB_BRANCH}"
+TW_TZ = timezone(timedelta(hours=8))
+
+# ==========================================
+# 🎨 網頁基本設定與樣式
+# ==========================================
+st.set_page_config(page_title=SITE_TITLE, page_icon="🏢", layout="wide")
+
 st.markdown("""
 <style>
-    /* 讓所有的圖片都有 12px 的圓角 */
-    img {
-        border-radius: 12px; 
-    }
+.block-container {padding-top: 1.5rem; padding-bottom: 3rem; max-width: 1100px;}
+.hero {position: relative; border-radius: 16px; overflow: hidden; min-height: 220px;
+       background-size: cover; background-position: center; display: flex; align-items: flex-end;}
+.hero-inner {width: 100%; padding: 22px 24px; color: #fff;
+             background: linear-gradient(to top, rgba(0,0,0,.72), rgba(0,0,0,.05));}
+.hero h1 {color: #fff !important; font-size: 2.1rem; margin: 0; padding: 0;}
+.hero p {color: #eef5ea; margin: 4px 0 0 0; font-size: .95rem;}
+.card {background: #fff; color: #1F2A1F; border: 1px solid #E3E9DF; border-radius: 14px; padding: 16px 18px;}
+.latest {border-left: 6px solid #5FA82E; margin: 16px 0;}
+.latest .label {font-size: .8rem; color: #5FA82E; font-weight: 700; letter-spacing: .05em;}
+.latest .title {font-size: 1.3rem; font-weight: 700; margin: 2px 0 6px 0;}
+.muted {color: #6B7768; font-size: .85rem;}
+.kpis {display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin: 8px 0 18px 0;}
+.kpi .k-label {font-size: .82rem; color: #6B7768;}
+.kpi .k-value {font-size: 1.6rem; font-weight: 700; color: #1F2A1F; line-height: 1.3;}
+.kpi .k-sub {font-size: .78rem; color: #8A9587;}
+.badge {display: inline-block; padding: 2px 10px; border-radius: 999px; font-size: .78rem; font-weight: 600;}
+.b-ok {background: #E4F4DA; color: #2F6B12;} .b-wait {background: #FFF1D6; color: #8A5A00;}
+.b-bad {background: #FDE2E1; color: #A3231C;} .b-other {background: #ECEFEA; color: #4A5547;}
+.roadmap {list-style: none; padding: 0; margin: 0;}
+.roadmap li {display: flex; gap: 12px; padding: 9px 0; border-bottom: 1px dashed #E3E9DF;}
+.roadmap li:last-child {border-bottom: none;}
+.roadmap .dot {flex: 0 0 26px; height: 26px; border-radius: 50%; display: flex; align-items: center;
+               justify-content: center; font-size: .8rem; font-weight: 700;}
+.dot-done {background: #5FA82E; color: #fff;} .dot-doing {background: #FFB020; color: #fff;}
+.dot-todo {background: #ECEFEA; color: #8A9587;}
+.roadmap .r-name {font-weight: 600;} .roadmap .r-note {font-size: .8rem; color: #6B7768;}
+.bar {height: 8px; background: #ECEFEA; border-radius: 99px; margin-top: 5px; overflow: hidden; max-width: 220px;}
+.bar > div {height: 100%; background: #5FA82E; border-radius: 99px;}
+.year {font-size: 1.1rem; font-weight: 700; color: #5FA82E; margin: 22px 0 8px 0;}
+.tl {display: flex; gap: 14px; margin-bottom: 12px;}
+.tl .date {flex: 0 0 78px; text-align: right; font-weight: 700; color: #1F2A1F; padding-top: 16px; font-size: .9rem;}
+.tl .date span {display: block; font-weight: 400; color: #8A9587; font-size: .75rem;}
+.tl .card {flex: 1; min-width: 0;}
+.tl .t-title {font-weight: 700; font-size: 1.05rem; margin-bottom: 4px;}
+.tl.is-latest .card {border: 2px solid #5FA82E;}
+.strip {display: flex; gap: 8px; overflow-x: auto; margin-top: 10px; padding-bottom: 4px;}
+.strip a {flex: 0 0 auto;}
+.strip img {height: 120px; width: auto; border-radius: 10px; display: block; background: #ECEFEA;}
+.gallery {display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 14px; margin-bottom: 10px;}
+.gallery figure {margin: 0; background: #fff; border: 1px solid #E3E9DF; border-radius: 12px; overflow: hidden;}
+.gallery img {width: 100%; aspect-ratio: 4/3; object-fit: cover; display: block; background: #ECEFEA;}
+.gallery figcaption {padding: 8px 10px; font-size: .82rem; color: #4A5547;}
+.gallery figcaption b {display: block; color: #1F2A1F; font-size: .88rem;}
+.btn {display: inline-block; padding: 10px 18px; border-radius: 10px; font-weight: 600; text-decoration: none !important;}
+.btn-line {background: #06C755; color: #fff !important;}
+@media (max-width: 640px) {
+  .hero {min-height: 170px;} .hero h1 {font-size: 1.6rem;}
+  .kpis {grid-template-columns: repeat(2, 1fr);}
+  .kpi .k-value {font-size: 1.3rem;}
+  .tl {gap: 8px;} .tl .date {flex-basis: 56px; font-size: .8rem;}
+  .strip img {height: 96px;}
+}
 </style>
 """, unsafe_allow_html=True)
 
 
+def show_html(s):
+    """把 HTML 壓成無縮排的字串再輸出 (避免 Markdown 把縮排當成程式碼區塊)"""
+    st.markdown("".join(line.strip() for line in s.splitlines()), unsafe_allow_html=True)
+
+
+def esc(x):
+    return html.escape(str(x))
+
+
+def photo_url(filename):
+    return f"{RAW_BASE}/photos/{quote(str(filename))}"
+
+
+def img_src(url, width):
+    """縮圖網址：透過 images.weserv.nl 依寬度縮小，原圖仍保留在 GitHub"""
+    if not USE_IMAGE_PROXY:
+        return url
+    return f"https://images.weserv.nl/?url={quote(url.replace('https://', ''), safe='')}&w={width}&q=72&output=jpg"
+
+
+def badge(status):
+    s = str(status)
+    if "同意" in s or "准予" in s or "核准" in s:
+        cls = "b-ok"
+    elif "待審" in s or "審查" in s or "處理" in s:
+        cls = "b-wait"
+    elif "退" in s or "不" in s:
+        cls = "b-bad"
+    else:
+        cls = "b-other"
+    return f"<span class='badge {cls}'>{esc(s)}</span>"
+
+
+def display_item(item):
+    item = str(item).strip()
+    if item in ("", "-", "nan"):
+        return "新勘驗申請（審查中，項目尚未公布）"
+    return item.rstrip("-").strip() or item
+
+
+def parse_floor(item):
+    """地下N樓 -> -N，地上N樓 -> N"""
+    m = re.search(r'地下(\d+)樓', str(item))
+    if m:
+        return -int(m.group(1))
+    m = re.search(r'地上(\d+)樓', str(item))
+    if m:
+        return int(m.group(1))
+    return None
+
+
 # ==========================================
-# 👑 1. 視覺與迎賓區 (標題與右上角計數器)
+# 📥 讀取資料 (GitHub 優先，失敗改讀同資料夾的檔案)
 # ==========================================
-col_title, col_counter = st.columns([3, 1])
-
-with col_title:
-    # 📝 調整 3：更改標題為光茵築夢日記
-    st.title("🏢 光茵築夢日記")
-    
-with col_counter:
-    st.write("") # 稍微往下推一點點來對齊標題
-    
-    # 🌟 採用驗證過的 hits.sh 穩定版計數器！
-    # ⚠️ 記得把下面的 forworld-hills.streamlit.app 換成你剛剛真正部署成功的那個網址喔！
-    st.markdown('''
-    <div style='display: flex; justify-content: flex-end; align-items: center; font-size: 15px; color: #666666; font-weight: bold;'>
-        <span style='margin-right: 8px;'>👁️ 芳鄰瀏覽：</span>
-        <img src="https://hits.sh/forworld-hills.streamlit.app.svg?label=累計&color=79C83D&labelColor=555555" alt="views"/>
-    </div>
-    ''', unsafe_allow_html=True)
-    
-st.info("本系統由 B6-8F 芳鄰 (Jerry) 開發，自動連線抓取新北市政府建管系統數據，提供最新工程進度紀錄。")
-
-# 換成你提供的建案渲染圖網址
-
-# 註釋掉原本的 GitHub 網址
-st.image("https://raw.githubusercontent.com/Jerry7135/forworld-hills-tracker/main/header.jpg", 
-         caption="建案周邊街景意象圖", use_container_width=True)
+def read_csv_any_encoding(src):
+    """先用 UTF-8 讀；若檔案被 Excel 存成 Big5 (cp950) 也能讀"""
+    last_err = None
+    for enc in ("utf-8-sig", "cp950"):
+        try:
+            return pd.read_csv(src, dtype=str, encoding=enc)
+        except UnicodeDecodeError as e:
+            last_err = e
+    raise last_err
 
 
-# 改為直接讀取同資料夾下的本地檔案
-#st.image("header.jpg", caption="馥華之丘-光茵 完工意象圖", use_container_width=True)
-
-# ==========================================
-# 📥 2. 讀取 GitHub 雲端資料庫
-# ==========================================
-csv_url = "https://raw.githubusercontent.com/Jerry7135/forworld-hills-tracker/main/history.csv"
-
-@st.cache_data(ttl=3600)
-def load_data():
+def read_csv_remote_first(name):
     try:
-        df = pd.read_csv(csv_url)
-        df['掛號日期'] = pd.to_datetime(df['掛號日期'])
-        df = df.sort_values(by='掛號日期').reset_index(drop=True)
-        return df
-    except Exception as e:
-        st.error(f"連線失敗，請檢查 GitHub CSV 檔案。")
-        return pd.DataFrame()
+        return read_csv_any_encoding(f"{RAW_BASE}/{quote(name)}")
+    except Exception:
+        return read_csv_any_encoding(name)
 
-df = load_data()
+
+@st.cache_data(ttl=600)
+def load_history():
+    df = read_csv_remote_first("history.csv")
+    df.columns = [c.strip().lstrip("﻿") for c in df.columns]
+    df['掛號日期'] = pd.to_datetime(df['掛號日期'])
+    df['樓層'] = df['勘驗項目'].apply(parse_floor)
+    return df.sort_values(by='掛號日期').reset_index(drop=True)
+
+
+@st.cache_data(ttl=600)
+def load_photos():
+    try:
+        p = read_csv_remote_first("photos.csv").fillna("")
+        p.columns = [c.strip().lstrip("﻿") for c in p.columns]
+        return p
+    except Exception:
+        return pd.DataFrame(columns=["勘驗項目", "檔名", "標題", "說明"])
+
+
+try:
+    df = load_history()
+except Exception:
+    df = pd.DataFrame()
+photos = load_photos()
+
+if df.empty:
+    st.warning("⚠️ 目前讀不到工程進度資料，請稍後再試。")
+    st.stop()
 
 # ==========================================
-# 🧠 3. 智慧交屋推估引擎 (含視覺化進度條與倒數修復)
+# 🧮 計算進度 (只用建管處已有的勘驗資料，不推估交屋)
 # ==========================================
-if not df.empty:
-    today = datetime.now()
-    
-   # --- 關鍵數據提取 ---
-    # 尋找「開工報告」那天的日期當作真正的起算點
-    start_record = df[df['勘驗項目'].str.contains('開工報告-', na=False)]
-    
-    if not start_record.empty:
-        # 如果有找到開工報告，就用那一天的日期
-        start_date = start_record['掛號日期'].iloc[0] 
+today = datetime.now(TW_TZ).replace(tzinfo=None)
+
+start_record = df[df['勘驗項目'].str.contains('開工報告', na=False)]
+start_date = start_record['掛號日期'].iloc[0] if not start_record.empty else FALLBACK_START_DATE
+days_since_start = (today - start_date).days
+
+slabs = df[df['勘驗項目'].str.contains('頂版', na=False) & df['樓層'].notna()]
+above = slabs[slabs['樓層'] > 0].sort_values('掛號日期')
+below = slabs[slabs['樓層'] < 0]
+
+current_floor = int(above['樓層'].max()) if not above.empty else 0
+basement_done = int(-below['樓層'].min()) if not below.empty else 0
+progress_ratio = min(current_floor / TOTAL_FLOORS, 1.0)
+
+# 近期施工節奏：取最近 5 次地上頂版勘驗
+pace = None
+recent = above.tail(5)
+if len(recent) >= 2:
+    floors_diff = recent['樓層'].iloc[-1] - recent['樓層'].iloc[0]
+    days_diff = (recent['掛號日期'].iloc[-1] - recent['掛號日期'].iloc[0]).days
+    if floors_diff > 0:
+        pace = days_diff / floors_diff
+
+structure_estimate = None
+if SHOW_STRUCTURE_ESTIMATE and pace and 0 < current_floor < TOTAL_FLOORS:
+    remaining = TOTAL_FLOORS - current_floor
+    last_slab_date = above['掛號日期'].max()
+    early = last_slab_date + timedelta(days=remaining * pace * 0.9)
+    late = last_slab_date + timedelta(days=remaining * pace * 1.3)
+    if early.year == late.year:
+        structure_estimate = f"{early.year} 年 {early.month}～{late.month} 月" if early.month != late.month else f"{early.year} 年 {early.month} 月"
     else:
-        # 萬一發生異常沒比對到，我們設定一個絕對保底的真實開工日：2023年9月1日
-        start_date = datetime(2023, 9, 1)
-        
-    days_since_start = (today - start_date).days
-    
-    all_roof_slabs = df[df['勘驗項目'].str.contains('頂版')]
-    above_ground_slabs = df[df['勘驗項目'].str.contains('地上') & df['勘驗項目'].str.contains('頂版')]
-    
-    # --- 模型參數設定 ---
-    TOTAL_FLOORS = 25           
-    BUFFER_DAYS = 180           
-    
-    if len(above_ground_slabs) >= 2:
-        duration = (above_ground_slabs['掛號日期'].max() - above_ground_slabs['掛號日期'].min()).days
-        slabs_count = len(above_ground_slabs) - 1
-        avg_days_per_floor = duration / slabs_count
-    else:
-        avg_days_per_floor = 28.3 
+        structure_estimate = f"{early.year} 年 {early.month} 月～{late.year} 年 {late.month} 月"
 
-    # --- 剩餘時間與交屋日計算 (💡 修正倒數不變的 Bug) ---
-    remaining_floors = TOTAL_FLOORS - len(all_roof_slabs)
-    if remaining_floors < 0: remaining_floors = 0
-        
-    # 1. 抓出「最新一次」的工程進度日期當作起算錨點
-    last_record_date = df['掛號日期'].max()
-    
-    # 2. 從「最新進度日」開始推算，還需要多少天
-    days_needed_from_last = math.ceil(remaining_floors * avg_days_per_floor) + BUFFER_DAYS
-    
-    # 3. 算出絕對的「目標交屋日」
-    target_date = last_record_date + timedelta(days=days_needed_from_last)
-    
-    # 4. 今天的剩餘天數 = 目標交屋日 - 今天 (這樣每天都會自動減 1 天！)
-    days_to_delivery = (target_date - today).days
-    if days_to_delivery < 0: days_to_delivery = 0
-        
-    target_month_str = f"程式動態推估預計 {target_date.year} 年 {target_date.month} 月交屋"
-    
-    # --- UI 儀表板顯示 ---
-    col1, col2, col3 = st.columns(3)
-    with col1:
-        st.metric("👷 已開工天數", f"{days_since_start} 天", help=f"開工日期：{start_date.strftime('%Y-%m-%d')}")
-    with col2:
-        st.metric("🏗️ 地上層平均工期", f"{avg_days_per_floor:.1f} 天/層")
-    with col3:
-        # 加一個向下的紅色小箭頭，讓大家感覺天數在變少
-        st.metric("⏳ 預估交屋剩餘天數", f"{days_to_delivery} 天", f"-1 天 (每日遞減)", delta_color="inverse")
-        
-    # --- 🌟 提案 A：建築主體工程視覺化進度條 (地上層精準版) ---
-    st.markdown("<br>", unsafe_allow_html=True) # 加一點空白讓版面呼吸
-    
-    # 修正：只計算「地上層」的進度百分比，對齊總樓層 25 樓
-    completed_above_floors = len(above_ground_slabs)
-    progress_ratio = completed_above_floors / TOTAL_FLOORS
-    if progress_ratio > 1.0: progress_ratio = 1.0 
-    progress_percent = int(progress_ratio * 100)
-    
-    # 計算地下室蓋了幾層 (總頂版數 - 地上頂版數)
-    underground_slabs = len(all_roof_slabs) - completed_above_floors
+latest = df.iloc[-1]
+days_ago = (today - latest['掛號日期']).days
+days_ago_text = "今天" if days_ago <= 0 else f"{days_ago} 天前"
 
-    # 顯示文字與進度條
-    st.write(f"**🏢 地上主體結構進度：** 目前已蓋至 **地上 {completed_above_floors} 層** / 總計 {TOTAL_FLOORS} 層 **({progress_percent}%)**")
-    st.progress(progress_ratio) # 繪製 Streamlit 內建綠色進度條
-    
-    # 排版巧思：左邊放地下室備註，右邊放交屋年月
-    col_sub1, col_sub2 = st.columns([1, 1])
-    with col_sub1:
-        if underground_slabs > 0:
-            st.markdown(f"<div style='color: #888888; font-size: 13px;'>*(註：已完成 {underground_slabs} 層地下室結構)*</div>", unsafe_allow_html=True)
-    with col_sub2:
-        st.markdown(f"<div style='text-align: right; color: gray; font-size: 14px; font-weight: bold;'>{target_month_str}</div>", unsafe_allow_html=True)
+# ==========================================
+# 👑 頁首
+# ==========================================
+show_html(f"""
+<div class="hero" style="background-image:url('{img_src(f"{RAW_BASE}/header.jpg", 1600)}');">
+  <div class="hero-inner">
+    <h1>🏢 {esc(SITE_TITLE)}</h1>
+    <p>{esc(PROJECT_NAME)}｜工程進度紀錄・資料來源：新北市政府工務局建管系統</p>
+  </div>
+</div>
+<div class="card latest">
+  <div class="label">最新進度・{esc(days_ago_text)}</div>
+  <div class="title">{esc(display_item(latest['勘驗項目']))}</div>
+  <div>{badge(latest['審核進度'])} <span class="muted">　掛號日期 {latest['掛號日期']:%Y-%m-%d}</span></div>
+</div>
+""")
 
-    # 📝 免責聲明
-    st.caption("⚠️ **預估時程免責聲明**：以上預估交屋天數與日期，係由系統依據目前「地上層」實際過件進度動態推算，僅供芳鄰參考。**不保證實際完工日期，確切交屋時程請以馥華集團正式公告為準。**")
+tab_overview, tab_records, tab_album, tab_about = st.tabs(["📊 進度總覽", "📜 施工紀錄", "📸 相簿", "ℹ️ 關於本站"])
 
-    # ==========================================
-    # 📈 3.5 施工爬升曲線 (日期 vs 樓層)
-    # ==========================================
-    def parse_floor(item):
-        """從勘驗項目文字解析樓層：地下N樓 -> -N，地上N樓 -> N"""
-        m = re.search(r'地下(\d+)樓', str(item))
-        if m:
-            return -int(m.group(1))
-        m = re.search(r'地上(\d+)樓', str(item))
-        if m:
-            return int(m.group(1))
-        return None
+# ==========================================
+# 📊 分頁一：進度總覽
+# ==========================================
+with tab_overview:
+    pace_text = f"{pace:.0f}" if pace else "—"
+    show_html(f"""
+    <div class="kpis">
+      <div class="card kpi"><div class="k-label">🏗️ 地上結構</div>
+        <div class="k-value">{current_floor}F <span style="font-size:1rem;color:#8A9587;">/ {TOTAL_FLOORS}F</span></div>
+        <div class="k-sub">完成 {progress_ratio:.0%}</div></div>
+      <div class="card kpi"><div class="k-label">⏱️ 近期節奏</div>
+        <div class="k-value">{pace_text} <span style="font-size:1rem;color:#8A9587;">天/層</span></div>
+        <div class="k-sub">最近 {len(recent)} 次頂版勘驗</div></div>
+      <div class="card kpi"><div class="k-label">👷 開工至今</div>
+        <div class="k-value">{days_since_start:,} <span style="font-size:1rem;color:#8A9587;">天</span></div>
+        <div class="k-sub">開工 {start_date:%Y-%m-%d}</div></div>
+      <div class="card kpi"><div class="k-label">📋 勘驗紀錄</div>
+        <div class="k-value">{len(df)} <span style="font-size:1rem;color:#8A9587;">筆</span></div>
+        <div class="k-sub">自動同步建管系統</div></div>
+    </div>
+    """)
 
-    slab_df = df[df['勘驗項目'].str.contains('頂版', na=False)].copy()
-    slab_df['樓層'] = slab_df['勘驗項目'].apply(parse_floor)
-    slab_df = slab_df.dropna(subset=['樓層'])
+    col_building, col_road = st.columns([1, 1.25], gap="large")
 
-    if len(slab_df) >= 2:
-        st.markdown("<br>", unsafe_allow_html=True)
-        st.write("**📈 施工爬升曲線**（每個點為一次頂版勘驗，線越陡代表蓋得越快）")
+    # --- 🏢 樓層剖面圖 ---
+    with col_building:
+        st.markdown("**🏢 樓層剖面圖**")
+        fh, w, left = 13, 170, 52
+        n_total = TOTAL_FLOORS + BASEMENT_FLOORS
+        top = 18
+        height = top + n_total * fh + 30
+        parts = []
+        for i in range(n_total):
+            floor = TOTAL_FLOORS - i if i < TOTAL_FLOORS else -(i - TOTAL_FLOORS + 1)
+            y = top + i * fh + (6 if floor < 0 else 0)
+            if floor > 0:
+                done = floor <= current_floor
+                fill = "#FFB020" if floor == current_floor else ("#5FA82E" if done else "#FFFFFF")
+            else:
+                done = -floor <= basement_done
+                fill = "#8C6D4F" if done else "#FFFFFF"
+            parts.append(f"<rect x='{left}' y='{y}' width='{w}' height='{fh - 2}' rx='2' fill='{fill}' stroke='#C9D3C4' stroke-width='1'/>")
+            if floor in (TOTAL_FLOORS, 20, 15, 10, 5, 1) or floor == -1 or floor == -BASEMENT_FLOORS:
+                label = f"{floor}F" if floor > 0 else f"B{-floor}"
+                parts.append(f"<text x='{left - 8}' y='{y + fh - 4}' text-anchor='end' font-size='10' fill='#6B7768'>{label}</text>")
+            if floor == current_floor and current_floor > 0:
+                parts.append(f"<text x='{left + w + 8}' y='{y + fh - 3}' font-size='11' font-weight='700' fill='#B57400'>◀ 目前 {current_floor}F</text>")
+        ground_y = top + TOTAL_FLOORS * fh + 2
+        parts.append(f"<line x1='10' x2='{left + w + 40}' y1='{ground_y}' y2='{ground_y}' stroke='#6B7768' stroke-dasharray='4 3'/>")
+        parts.append(f"<text x='{left + w + 8}' y='{ground_y + 4}' font-size='10' fill='#6B7768'>地面</text>")
+        legend_y = height - 8
+        parts.append(f"<rect x='{left}' y='{legend_y - 9}' width='10' height='10' fill='#5FA82E'/><text x='{left + 14}' y='{legend_y}' font-size='10' fill='#4A5547'>已完成</text>")
+        parts.append(f"<rect x='{left + 60}' y='{legend_y - 9}' width='10' height='10' fill='#FFB020'/><text x='{left + 74}' y='{legend_y}' font-size='10' fill='#4A5547'>最新</text>")
+        parts.append(f"<rect x='{left + 110}' y='{legend_y - 9}' width='10' height='10' fill='#fff' stroke='#C9D3C4'/><text x='{left + 124}' y='{legend_y}' font-size='10' fill='#4A5547'>未施工</text>")
+        show_html(f"<div class='card' style='text-align:center;'><svg viewBox='0 0 {left + w + 80} {height}' style='width:100%;max-width:340px;' role='img' aria-label='樓層剖面圖'>{''.join(parts)}</svg></div>")
 
-        base = alt.Chart(slab_df).encode(
-            x=alt.X('掛號日期:T', title='掛號日期', axis=alt.Axis(format='%Y/%m', tickCount='month')),
-            y=alt.Y('樓層:Q', title='樓層',
-                    axis=alt.Axis(labelExpr="datum.value < 0 ? 'B' + -datum.value : datum.value + 'F'")),
-            tooltip=[
-                alt.Tooltip('掛號日期:T', title='掛號日期', format='%Y-%m-%d'),
-                alt.Tooltip('勘驗項目:N', title='勘驗項目'),
-                alt.Tooltip('審核進度:N', title='審核進度')
-            ]
+    # --- 🗺️ 工程階段 ---
+    with col_road:
+        st.markdown("**🗺️ 工程階段**")
+        underground_done_date = below['掛號日期'].max() if not below.empty else None
+        stages = [
+            {"name": "開工與基礎工程", "status": "done", "note": f"{start_date:%Y-%m-%d} 開工"},
+            {"name": f"地下室結構 (B{BASEMENT_FLOORS}～B1)",
+             "status": "done" if basement_done >= BASEMENT_FLOORS else ("doing" if basement_done else "todo"),
+             "note": f"B1 頂版 {underground_done_date:%Y-%m-%d} 勘驗" if basement_done >= BASEMENT_FLOORS and underground_done_date is not None else ""},
+            {"name": f"地上結構體 (1F～{TOTAL_FLOORS}F)",
+             "status": "done" if current_floor >= TOTAL_FLOORS else ("doing" if current_floor else "todo"),
+             "note": f"目前 {current_floor}F / {TOTAL_FLOORS}F", "bar": progress_ratio},
+            {"name": "結構封頂", "status": "done" if current_floor >= TOTAL_FLOORS else "todo",
+             "note": f"若維持近期節奏，參考約 {structure_estimate}" if structure_estimate else ""},
+        ] + LATER_STAGES
+
+        items = []
+        step = 0
+        for s in stages:
+            step += 1
+            status = s.get("status", "todo")
+            icon = "✓" if status == "done" else str(step)
+            status_text = {"done": "已完成", "doing": "進行中", "todo": "尚未開始"}.get(status, "")
+            bar = f"<div class='bar'><div style='width:{s['bar'] * 100:.0f}%'></div></div>" if "bar" in s and status == "doing" else ""
+            note = f"<div class='r-note'>{esc(s['note'])}</div>" if s.get("note") else ""
+            items.append(f"<li><div class='dot dot-{status}'>{icon}</div><div><div class='r-name'>{esc(s['name'])} "
+                         f"<span class='muted'>・{status_text}</span></div>{note}{bar}</div></li>")
+        show_html(f"<div class='card'><ul class='roadmap'>{''.join(items)}</ul></div>")
+        st.caption("ℹ️ 結構封頂之後的階段（外牆、內裝、拆鷹架、使用執照、交屋）在建管勘驗資料中查不到，"
+                   "將由站長依公開資訊手動更新。本站不推估交屋日期，實際時程請以建商正式公告為準。")
+
+    # --- 📈 施工爬升曲線 ---
+    if len(slabs) >= 2:
+        st.markdown("**📈 施工爬升曲線**　<span class='muted'>每個點是一次頂版勘驗，線越陡代表蓋得越快</span>", unsafe_allow_html=True)
+        chart_df = slabs[['掛號日期', '樓層', '勘驗項目', '審核進度']].copy()
+        y_scale = alt.Scale(domain=[-BASEMENT_FLOORS - 1, TOTAL_FLOORS + 2])
+        base = alt.Chart(chart_df).encode(
+            x=alt.X('掛號日期:T', title=None, axis=alt.Axis(format='%Y/%m', tickCount='month', labelAngle=0)),
+            y=alt.Y('樓層:Q', title=None, scale=y_scale,
+                    axis=alt.Axis(values=[-BASEMENT_FLOORS, 0] + list(range(5, TOTAL_FLOORS + 1, 5)), labelExpr="datum.value < 0 ? 'B' + -datum.value : datum.value == 0 ? '地面' : datum.value + 'F'")),
+            tooltip=[alt.Tooltip('掛號日期:T', title='掛號日期', format='%Y-%m-%d'),
+                     alt.Tooltip('勘驗項目:N', title='勘驗項目'),
+                     alt.Tooltip('審核進度:N', title='審核進度')],
         )
-        line = base.mark_line(color='#79C83D', strokeWidth=3)
-        points = base.mark_point(color='#79C83D', filled=True, size=80)
-        # 地平面虛線 (0 樓)，上方為地上層、下方為地下室
-        ground = alt.Chart(pd.DataFrame({'y': [0]})).mark_rule(
-            color='#888888', strokeDash=[4, 4]).encode(y='y:Q')
+        line = base.mark_line(color='#5FA82E', strokeWidth=3)
+        points = base.mark_point(color='#5FA82E', filled=True, size=70)
+        rules = pd.DataFrame({'y': [0, TOTAL_FLOORS], 'label': ['', f'頂樓 {TOTAL_FLOORS}F']})
+        rule = alt.Chart(rules).mark_rule(color='#9AA596', strokeDash=[4, 4]).encode(y='y:Q')
+        rule_text = alt.Chart(rules).mark_text(align='left', dx=4, dy=-6, color='#6B7768', fontSize=11).encode(
+            y='y:Q', x=alt.value(0), text='label:N')
+        st.altair_chart((rule + rule_text + line + points).properties(height=300), use_container_width=True)
 
-        st.altair_chart((ground + line + points).properties(height=320), use_container_width=True)
-        st.caption("🟢 灰色虛線為地平面：下方為地下室開挖與結構期，上方為地上層爬升期。滑鼠移到點上可看各樓層勘驗細節。")
-
-    st.markdown("---")
-    
 # ==========================================
-    # 📸 4. 施工紀錄與相簿派發中心
-    # ==========================================
-    st.subheader("📜 工程進度施工紀錄與實況")
+# 📜 分頁二：施工紀錄 (時間軸)
+# ==========================================
+def photo_strip(item):
+    rows = photos[photos['勘驗項目'] == item]
+    if rows.empty:
+        return ""
+    thumbs = []
+    for _, p in rows.iterrows():
+        url = photo_url(p['檔名'])
+        tip = esc(f"{p['標題']}｜{p['說明']}")
+        thumbs.append(f"<a href='{esc(url)}' target='_blank' title='{tip}'>"
+                      f"<img loading='lazy' src='{esc(img_src(url, 400))}' alt='{tip}'></a>")
+    return f"<div class='strip'>{''.join(thumbs)}</div><div class='muted' style='margin-top:4px;'>📷 {len(rows)} 張照片，點圖看原圖</div>"
 
-    # 🌟 宏信專屬：單一總相簿設計！(只要設定一次，以後都不用改程式碼)
-    MASTER_ALBUM_URL = "https://drive.google.com/drive/folders/1jgaPFGbTZS707tToVchHkqN5Xuu7gJ98?usp=sharing"
-    
-    # 在時間軸最上方放一個非常顯眼的總相簿大按鈕
-    st.info("💡 想要看更完整的施工細節與歷程嗎？")
-    st.link_button("☁️ 前往 Google Drive 查看【光茵築夢全紀錄】總相簿", MASTER_ALBUM_URL, use_container_width=True)
-    st.markdown("---")
 
-    # 🖼️ 【精選輪播照片區】: 放 1~3 張最精華的照片，網頁直接顯示
-    MILESTONE_PHOTOS = {
+with tab_records:
+    st.caption("由新到舊排列。資料每天自動向新北市建管系統同步兩次。")
+    newest_first = df.sort_values('掛號日期', ascending=False).reset_index(drop=True)
+    blocks = []
+    current_year = None
+    for idx, row in newest_first.iterrows():
+        year = row['掛號日期'].year
+        if year != current_year:
+            blocks.append(f"<div class='year'>{year}</div>")
+            current_year = year
+        latest_cls = " is-latest" if idx == 0 else ""
+        latest_tag = "<span class='badge b-ok' style='margin-left:6px;'>最新</span>" if idx == 0 else ""
+        blocks.append(f"""
+        <div class="tl{latest_cls}">
+          <div class="date">{row['掛號日期']:%m/%d}<span>{row['掛號日期']:%Y}</span></div>
+          <div class="card">
+            <div class="t-title">{esc(display_item(row['勘驗項目']))}{latest_tag}</div>
+            <div>{badge(row['審核進度'])} <span class="muted">　掛號號碼 {esc(row['掛號號碼'])}</span></div>
+            {photo_strip(row['勘驗項目'])}
+          </div>
+        </div>""")
+    show_html("".join(blocks))
 
-        "地上17樓頂版勘驗": [
-            {"url": "https://raw.githubusercontent.com/Jerry7135/forworld-hills-tracker/main/photos/17f-a.jpg", "tab_name": "📸 261115空拍", "caption": "路口空拍視角(芳鄰-丘丘蛙提供)"},
-            {"url": "https://raw.githubusercontent.com/Jerry7135/forworld-hills-tracker/main/photos/17f-b.jpg", "tab_name": "📸 261115空拍", "caption": "基地俯視視角(芳鄰-丘丘蛙提供)"},
-        ],
-        
-        "地上15樓頂版勘驗": [
-            {"url": "https://raw.githubusercontent.com/Jerry7135/forworld-hills-tracker/main/photos/15f-a.jpg", "tab_name": "📸 261019空拍", "caption": "四季空拍視角(社群網友提供)"}
-        ],
-  
-        "地上14樓頂版勘驗": [
-            {"url": "https://raw.githubusercontent.com/Jerry7135/forworld-hills-tracker/main/photos/14f-a.jpg", "tab_name": "📸 260919空拍", "caption": "四季空拍視角(社群網友提供)"}
-        ],
-        
-        "地上12樓頂版勘驗": [
-            {"url": "https://raw.githubusercontent.com/Jerry7135/forworld-hills-tracker/main/photos/12f-a.jpg", "tab_name": "📸 260822空拍", "caption": "路口空拍視角(芳鄰-丘丘蛙提供)"},
-            {"url": "https://raw.githubusercontent.com/Jerry7135/forworld-hills-tracker/main/photos/12f-b.jpg", "tab_name": "📸 260822空拍", "caption": "路口空拍視角(芳鄰-丘丘蛙提供)"},
-        ],
+# ==========================================
+# 📸 分頁三：相簿
+# ==========================================
+with tab_album:
+    st.link_button("☁️ 前往 Google Drive 看【光茵築夢全紀錄】完整相簿", MASTER_ALBUM_URL, use_container_width=True)
+    if photos.empty:
+        st.info("目前還沒有精選照片。")
+    else:
+        order = df.sort_values('掛號日期', ascending=False)
+        date_of = dict(zip(order['勘驗項目'], order['掛號日期']))
+        groups = sorted(photos['勘驗項目'].unique(), key=lambda k: date_of.get(k, pd.Timestamp.min), reverse=True)
+        for g in groups:
+            rows = photos[photos['勘驗項目'] == g]
+            d = date_of.get(g)
+            date_txt = f"　<span class='muted'>{d:%Y-%m-%d}</span>" if d is not None else ""
+            figs = []
+            for _, p in rows.iterrows():
+                url = photo_url(p['檔名'])
+                figs.append(f"<figure><a href='{esc(url)}' target='_blank'><img loading='lazy' src='{esc(img_src(url, 600))}' "
+                            f"alt='{esc(p['標題'])}'></a><figcaption><b>{esc(p['標題'])}</b>{esc(p['說明'])}</figcaption></figure>")
+            show_html(f"<div class='year' style='font-size:1rem;'>📌 {esc(display_item(g))}{date_txt}</div>"
+                      f"<div class='gallery'>{''.join(figs)}</div>")
+        st.caption("📷 照片由芳鄰熱情提供，點圖可看原始大圖。歡迎分享您拍到的工地照片！")
 
-        "地上11樓頂版勘驗": [
-            {"url": "https://raw.githubusercontent.com/Jerry7135/forworld-hills-tracker/main/photos/11f-a.jpg", "tab_name": "📸 260712空拍", "caption": "路口空拍視角(芳鄰-丘丘蛙提供)"}
-        ],
-        
-        "地上10樓頂版勘驗": [
-            {"url": "https://raw.githubusercontent.com/Jerry7135/forworld-hills-tracker/main/photos/10f-a.jpg", "tab_name": "📸 260701街拍", "caption": "青仁路停車場視角(芳鄰-Jerry拍攝)"}
-        ],
-
-        "地上9樓頂版勘驗": [
-            {"url": "https://raw.githubusercontent.com/Jerry7135/forworld-hills-tracker/main/photos/9f-d.jpg", "tab_name": "📸 青福街", "caption": "青福街視角(芳鄰-Jerry拍攝)"},
-            {"url": "https://raw.githubusercontent.com/Jerry7135/forworld-hills-tracker/main/photos/9f-a.jpg", "tab_name": "📸 AB棟空拍260613 (一)", "caption": "青福街視角(芳鄰-丘丘蛙提供)"},
-            {"url": "https://raw.githubusercontent.com/Jerry7135/forworld-hills-tracker/main/photos/9f-b.jpg", "tab_name": "📸 AB棟空拍260613 (二)", "caption": "青仁路交視角(芳鄰-丘丘蛙提供)"},
-            {"url": "https://raw.githubusercontent.com/Jerry7135/forworld-hills-tracker/main/photos/9f-c.jpg", "tab_name": "📸 260613空拍(三)", "caption": "金城交流道空拍(芳鄰-丘丘蛙提供)"}
-        ],
-
-        "地上8樓頂版勘驗": [
-        
-            {"url": "https://raw.githubusercontent.com/Jerry7135/forworld-hills-tracker/main/photos/8f-a.jpg", "tab_name": "📸 260601街拍(一)", "caption": "清水路96巷視角"}
-        ],  
-        
-        "地上7樓頂版勘驗": [
-        
-            {"url": "https://raw.githubusercontent.com/Jerry7135/forworld-hills-tracker/main/photos/6f-d.jpg", "tab_name": "📸 260502空拍(四)", "caption": "青仁路視角(芳鄰-丘丘蛙提供)"},
-            {"url": "https://raw.githubusercontent.com/Jerry7135/forworld-hills-tracker/main/photos/6d-e.jpg", "tab_name": "📸 260502空拍(五)", "caption": "青福街交叉路口視角(芳鄰-丘丘蛙提供)"}
-        ],    
-        
-        "地上6樓頂版勘驗": [
-            {"url": "https://raw.githubusercontent.com/Jerry7135/forworld-hills-tracker/main/photos/6f-a.jpg", "tab_name": "📸 AB棟空拍260426 (一)", "caption": "青仁路視角(芳鄰-丘丘蛙提供)"},
-            {"url": "https://raw.githubusercontent.com/Jerry7135/forworld-hills-tracker/main/photos/6f-b.jpg", "tab_name": "📸 AB棟空拍260426 (二)", "caption": "青福街交叉路口視角(芳鄰-丘丘蛙提供)"},
-            {"url": "https://raw.githubusercontent.com/Jerry7135/forworld-hills-tracker/main/photos/6f-c.jpg", "tab_name": "📸 260426空拍(三)", "caption": "金城交流道空拍(芳鄰-丘丘蛙提供)"}
-        ],
-
-        "地上5樓頂版勘驗": [
-            {"url": "https://raw.githubusercontent.com/Jerry7135/forworld-hills-tracker/main/photos/5f-a.jpg", "tab_name": "📸 A棟空拍260331 (一)", "caption": "青隆街視角(芳鄰-丘丘蛙提供)"},
-            {"url": "https://raw.githubusercontent.com/Jerry7135/forworld-hills-tracker/main/photos/5f-b.jpg", "tab_name": "📸 B棟空拍260331 (二)", "caption": "青仁路視角(芳鄰-丘丘蛙提供)"},
-            {"url": "https://raw.githubusercontent.com/Jerry7135/forworld-hills-tracker/main/photos/5f-c.jpg", "tab_name": "📸 AB棟260410空拍(三)", "caption": "四季基地空拍視角(芳鄰-丘丘蛙提供)"}
-        ],
-     
-        "地上4樓頂版勘驗": [
-            {"url": "https://raw.githubusercontent.com/Jerry7135/forworld-hills-tracker/main/photos/4f_1.jpg", "tab_name": "📸 AB棟空拍 (一)", "caption": "工地空拍照 1"},
-            {"url": "https://raw.githubusercontent.com/Jerry7135/forworld-hills-tracker/main/photos/4f_2.jpg", "tab_name": "📸 AB棟空拍 (二)", "caption": "工地空拍照 2"},
-            {"url": "https://raw.githubusercontent.com/Jerry7135/forworld-hills-tracker/main/photos/tower crane.jpg", "tab_name": "📸 塔吊安裝", "caption": "塔式起重機"},
-            {"url": "https://raw.githubusercontent.com/Jerry7135/forworld-hills-tracker/main/photos/4f_3.jpg", "tab_name": "📸 金城交流道", "caption": "空拍照"},
-            {"url": "https://raw.githubusercontent.com/Jerry7135/forworld-hills-tracker/main/photos/4f_4.jpg", "tab_name": "📸 A棟空拍 (一)", "caption": "A棟空拍"},
-            {"url": "https://raw.githubusercontent.com/Jerry7135/forworld-hills-tracker/main/photos/4f_5.jpg", "tab_name": "📸 B棟空拍 (二)", "caption": "B棟空拍"}
-        ],
-
-        "基礎勘驗": [
-            {"url": "https://raw.githubusercontent.com/Jerry7135/forworld-hills-tracker/main/photos/Base_1.jpg", "tab_name": "📸 城真視角", "caption": "連續壁完成_準備開挖(芳鄰-Jerry拍攝)"},
-            {"url": "https://raw.githubusercontent.com/Jerry7135/forworld-hills-tracker/main/photos/Base_2.jpg", "tab_name": "📸 城市之中 山水之間-晚霞", "caption": "瞬間的美感(芳鄰-Jerry拍攝)"}
-        ],    
-        "放樣、勘驗檢查符合規定者始准動工": [
-            {"url": "https://raw.githubusercontent.com/Jerry7135/forworld-hills-tracker/main/photos/Staking_5.jpg", "tab_name": "📸 地質勘查(一)", "caption": "工程視角"},
-            {"url": "https://raw.githubusercontent.com/Jerry7135/forworld-hills-tracker/main/photos/Staking_4.jpg", "tab_name": "📸 地質勘查(二)", "caption": "工程視角"},
-            {"url": "https://raw.githubusercontent.com/Jerry7135/forworld-hills-tracker/main/photos/Staking_3.jpg", "tab_name": "📸 重工具進駐(一)", "caption": "工程視角(芳鄰-Jerry拍攝)"},
-            {"url": "https://raw.githubusercontent.com/Jerry7135/forworld-hills-tracker/main/photos/Staking_6.jpg", "tab_name": "📸 重工具進駐(二)", "caption": "工程視角(芳鄰-Jerry拍攝)"}
-        ],    
-        "開工報告-": [
-            {"url": "https://raw.githubusercontent.com/Jerry7135/forworld-hills-tracker/main/photos/start_1.jpg", "tab_name": "📸 動土典禮-致詞", "caption": "馥華之丘-光茵 盛大開工(芳鄰-Jerry拍攝)"},
-            {"url": "https://raw.githubusercontent.com/Jerry7135/forworld-hills-tracker/main/photos/start_2.jpg", "tab_name": "📸 動土典禮-祈福", "caption": "馥華之丘-光茵 盛大開工(芳鄰-Jerry拍攝)"},
-            {"url": "https://raw.githubusercontent.com/Jerry7135/forworld-hills-tracker/main/photos/Staking_1.jpg", "tab_name": "📸 銷售中心拆除(一)", "caption": "拆除工程視角(芳鄰-Jerry拍攝)"},
-            {"url": "https://raw.githubusercontent.com/Jerry7135/forworld-hills-tracker/main/photos/Staking_2.jpg", "tab_name": "📸 銷售中心拆除(二)", "caption": "拆除工程視角(芳鄰-Jerry拍攝)"}
-        ],    
-        "施工計畫書": [
-            {"url": "https://raw.githubusercontent.com/Jerry7135/forworld-hills-tracker/main/photos/Pre-sale house_1.jpg", "tab_name": "📸 預售屋模型(一)", "caption": "青福街視角(芳鄰-Jerry拍攝)"},
-            {"url": "https://raw.githubusercontent.com/Jerry7135/forworld-hills-tracker/main/photos/Pre-sale house_2.jpg", "tab_name": "📸 預售屋模型(二)", "caption": "青仁路視角(芳鄰-Jerry拍攝)"},
-            {"url": "https://raw.githubusercontent.com/Jerry7135/forworld-hills-tracker/main/photos/Pre-sale house_3.jpg", "tab_name": "📸 展示中心-光影", "caption": "馥華之丘-光茵銷售中心(芳鄰-Jerry拍攝)"}
-        ]
-    }
-    
-    # 確保由新到舊排序，並重新發放 index
-    latest_df = df.sort_values(by='掛號日期', ascending=False).reset_index(drop=True)
-    
-    for index, row in latest_df.iterrows():
-        is_latest = (index == 0)
-        title_prefix = "🌟 [最新進度] " if is_latest else "📌 "
-        
-        with st.expander(f"{title_prefix}{row['掛號日期'].strftime('%Y-%m-%d')} - {row['勘驗項目']}", expanded=is_latest):
-            
-            if is_latest:
-                st.success("✨ 這是目前光茵最新的工程進度！")
-                
-            c1, c2 = st.columns([1, 1.8]) # 調整左右比例，讓照片大一點
-            with c1:
-                st.write(f"**審核進度：** `{row['審核進度']}`")
-                st.write(f"**掛號號碼：** `{row['掛號號碼']}`")
-
-            with c2:
-                milestone_name = row['勘驗項目']
-                
-                # 檢查這層樓有沒有設定精選照片
-                if milestone_name in MILESTONE_PHOTOS and len(MILESTONE_PHOTOS[milestone_name]) > 0:
-                    photos = MILESTONE_PHOTOS[milestone_name]
-                    
-                    # 建立分頁 (Tabs) 來達成輪播效果
-                    tab_names = [p["tab_name"] for p in photos]
-                    tabs = st.tabs(tab_names)
-                    
-                    # 依序把照片塞進對應的分頁裡
-                    for i, tab in enumerate(tabs):
-                        with tab:
-                            st.image(photos[i]["url"], caption=photos[i]["caption"], use_container_width=True)
-                else:
-                    # 🌟 質感優化：用乾淨的文字取代大塊的灰色假圖
-                    st.info(f"🏗️ 【{milestone_name}】此工程階段暫無上傳專屬影像紀錄。")
-                            
-            
-
-else:
-    st.warning("⚠️ 儀表板連線中，請確認 GitHub 專案中的 history.csv 是否存在。")
+# ==========================================
+# ℹ️ 分頁四：關於本站
+# ==========================================
+with tab_about:
+    line_btn = (f"<p><a class='btn btn-line' href='{esc(LINE_ADD_FRIEND_URL)}' target='_blank'>💬 加入 LINE 官方帳號，新進度自動通知</a></p>"
+                if LINE_ADD_FRIEND_URL else "")
+    show_html(f"""
+    <div class="card">
+      <p><b>{esc(SITE_TITLE)}</b> 是由芳鄰自發製作的工程進度紀錄站，{esc(AUTHOR_NOTE)}。</p>
+      <p>系統每天自動到 <b>新北市政府工務局建管系統</b> 查詢本案的施工勘驗紀錄，
+      當有新樓層的勘驗通過「同意備查」時，會透過 LINE 通知加入的芳鄰。</p>
+      {line_btn}
+      <p class="muted">⚠️ 本站資料僅供芳鄰參考，以建管系統公開資料為準；本站不推估交屋日期，
+      實際工程與交屋時程請以建商正式公告為準。</p>
+      <p class="muted">👁️ 累計瀏覽：<img style="vertical-align:middle;" alt="views"
+      src="https://hits.sh/{esc(COUNTER_KEY)}.svg?label=芳鄰瀏覽&color=5FA82E&labelColor=555555"></p>
+    </div>
+    """)
