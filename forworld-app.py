@@ -60,6 +60,8 @@ st.markdown("""
              background: linear-gradient(to top, rgba(0,0,0,.72), rgba(0,0,0,.05));}
 .hero h1 {color: #fff !important; font-size: 2.1rem; margin: 0; padding: 0;}
 .hero p {color: #eef5ea; margin: 4px 0 0 0; font-size: .95rem;}
+.hero p.hero-note {display: inline-block; margin-top: 8px; padding: 2px 10px; border-radius: 999px;
+                   background: rgba(255,255,255,.18); font-size: .8rem; color: #fff;}
 .card {background: #fff; color: #1F2A1F; border: 1px solid #E3E9DF; border-radius: 14px; padding: 16px 18px;}
 .latest {border-left: 6px solid #5FA82E; margin: 16px 0;}
 .latest .label {font-size: .8rem; color: #5FA82E; font-weight: 700; letter-spacing: .05em;}
@@ -260,6 +262,7 @@ show_html(f"""
   <div class="hero-inner">
     <h1>🏢 {esc(SITE_TITLE)}</h1>
     <p>{esc(PROJECT_NAME)}｜工程進度紀錄・資料來源：新北市政府工務局建管系統</p>
+    <p class="hero-note">🏠 芳鄰自發製作的非官方紀錄站，與建商無關</p>
   </div>
 </div>
 <div class="card latest">
@@ -454,8 +457,12 @@ with tab_about:
       <p>系統每天自動到 <b>新北市政府工務局建管系統</b> 查詢本案的施工勘驗紀錄，
       當有新樓層的勘驗通過「同意備查」時，會透過 LINE 通知加入的芳鄰。</p>
       {line_btn}
-      <p class="muted">⚠️ 本站資料僅供芳鄰參考，以建管系統公開資料為準；本站不推估交屋日期，
-      實際工程與交屋時程請以建商正式公告為準。</p>
+      <div style="background:#FFF8E6;border:1px solid #F2DDA4;border-radius:10px;padding:10px 14px;margin:12px 0;">
+      <b>📢 非官方聲明</b><br>
+      本站為住戶自發建立的非官方網站，與馥華集團及建案相關公司無任何隸屬或合作關係。
+      工程資料取自新北市政府建管系統公開資訊，照片由芳鄰提供；內容僅供參考，
+      一切以建商及主管機關正式公告為準。本站不推估交屋日期。
+      </div>
       <p class="muted">👁️ 累計瀏覽：<img style="vertical-align:middle;" alt="views"
       src="https://hits.sh/{esc(COUNTER_KEY)}.svg?label=芳鄰瀏覽&color=5FA82E&labelColor=555555"></p>
     </div>

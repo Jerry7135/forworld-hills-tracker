@@ -15,6 +15,9 @@ USER_ID = os.getenv("LINE_USER_ID")
 # 判斷是否為「GitHub 網頁上手動按下的測試按鈕」
 FORCE_TEST = os.getenv("FORCE_TEST", "false") == "true"
 
+# LINE 推播訊息最後附上的聲明
+DISCLAIMER = "（本訊息由住戶自發維護，非建商官方通知）"
+
 def send_line_message(msg_text):
     """使用 LINE Messaging API (機器人) 發送【廣播訊息】給所有好友"""
     if not CHANNEL_ACCESS_TOKEN:
@@ -123,14 +126,16 @@ def job():
                        f"📌 項目：{latest_row['勘驗項目']}\n"
                        f"🚥 狀態：{latest_row['審核進度']}\n"
                        f"📅 日期：{latest_row['掛號日期']}\n"
-                       f"🌐 光茵築夢日記網頁：{website_url}")
+                       f"🌐 光茵築夢日記網頁：{website_url}\n"
+                       f"{DISCLAIMER}")
             else:
                 msg = (f"\n🏢 【馥華之丘-光茵】出現新進度啦！\n"
                        f"📌 勘驗項目：{latest_row['勘驗項目']}\n"
                        f"🚥 審核進度：{latest_row['審核進度']}\n"
                        f"📅 掛號日期：{latest_row['掛號日期']}\n"
                        f"📊 目前累積：共 {len(new_df)} 筆\n"
-                       f"🌐 光茵築夢日記網頁：{website_url}")
+                       f"🌐 光茵築夢日記網頁：{website_url}\n"
+                       f"{DISCLAIMER}")
                   
             send_line_message(msg)
             print(f"🎉 發現異動或測試！已推播：{latest_row['勘驗項目']} ({latest_row['審核進度']})")
