@@ -47,10 +47,10 @@ LATER_STAGES = [
 
 # 樓層剖面圖：assets/building_done.jpg (已完成) 疊在 assets/building_todo.jpg (淡影) 上
 # 下面數字是「各層樓板在圖上的高度位置」(從圖片頂端算起的 %)，換圖才需要改
-BLDG_FLOOR2_PCT = 80.63    # 2F 樓板
-BLDG_FLOOR_STEP_PCT = 3.005  # 每層樓高
-BLDG_GROUND_PCT = 86.28    # 1F 地面
-BLDG_BASEMENT_PCT = {-1: 89.01, -2: 91.62, -3: 94.24, -4: 96.96}  # B1～B4 樓板
+BLDG_FLOOR2_PCT = 81.13    # 2F 樓板
+BLDG_FLOOR_STEP_PCT = 3.064  # 每層樓高
+BLDG_GROUND_PCT = 86.67    # 1F 地面
+BLDG_BASEMENT_PCT = {-1: 89.64, -2: 92.31, -3: 94.97, -4: 97.85}  # B1～B4 樓板
 
 RAW_BASE = f"https://raw.githubusercontent.com/{GITHUB_USER}/{GITHUB_REPO}/{GITHUB_BRANCH}"
 TW_TZ = timezone(timedelta(hours=8))
