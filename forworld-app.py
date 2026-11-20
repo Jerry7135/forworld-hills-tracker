@@ -1,6 +1,7 @@
 import base64
 import html
 import re
+import time
 from pathlib import Path
 from datetime import datetime, timedelta, timezone
 from urllib.parse import quote
@@ -227,7 +228,8 @@ def read_csv_any_encoding(src):
 
 def read_csv_remote_first(name):
     try:
-        return read_csv_any_encoding(f"{RAW_BASE}/{quote(name)}")
+        # 加上時間參數，避免 GitHub 端的 5 分鐘快取讀到舊檔
+        return read_csv_any_encoding(f"{RAW_BASE}/{quote(name)}?t={int(time.time())}")
     except Exception:
         return read_csv_any_encoding(name)
 
@@ -519,3 +521,11 @@ with tab_about:
       src="https://hits.sh/{esc(COUNTER_KEY)}.svg?label=芳鄰瀏覽&color=5FA82E&labelColor=555555"></p>
     </div>
     """)
+
+    # 站長更新 GitHub 上的 photos.csv / 照片後，按這裡就能馬上讀到新資料 (不用等 10 分鐘快取)
+    st.write("")
+    if st.button("🔄 重新整理資料", help="重新從 GitHub 讀取施工紀錄與照片清單"):
+        load_history.clear()
+        load_photos.clear()
+        st.toast("已重新讀取最新資料 ✅")
+        st.rerun()
