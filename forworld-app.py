@@ -1,5 +1,7 @@
+import base64
 import html
 import re
+from pathlib import Path
 from datetime import datetime, timedelta, timezone
 from urllib.parse import quote
 
@@ -42,6 +44,13 @@ LATER_STAGES = [
     {"name": "取得使用執照", "status": "todo", "note": ""},
     {"name": "交屋",         "status": "todo", "note": ""},
 ]
+
+# 樓層剖面圖：assets/building_done.jpg (已完成) 疊在 assets/building_todo.jpg (淡影) 上
+# 下面數字是「各層樓板在圖上的高度位置」(從圖片頂端算起的 %)，換圖才需要改
+BLDG_FLOOR2_PCT = 80.63    # 2F 樓板
+BLDG_FLOOR_STEP_PCT = 3.005  # 每層樓高
+BLDG_GROUND_PCT = 86.28    # 1F 地面
+BLDG_BASEMENT_PCT = {-1: 89.01, -2: 91.62, -3: 94.24, -4: 96.96}  # B1～B4 樓板
 
 RAW_BASE = f"https://raw.githubusercontent.com/{GITHUB_USER}/{GITHUB_REPO}/{GITHUB_BRANCH}"
 TW_TZ = timezone(timedelta(hours=8))
@@ -99,6 +108,22 @@ st.markdown("""
 .gallery img {width: 100%; aspect-ratio: 4/3; object-fit: cover; display: block; background: #ECEFEA;}
 .gallery figcaption {padding: 8px 10px; font-size: .82rem; color: #4A5547;}
 .gallery figcaption b {display: block; color: #1F2A1F; font-size: .88rem;}
+.bldg-card {padding: 14px 12px 12px 12px;}
+.bldg {position: relative; margin-right: 44px;}
+.bldg img {display: block; width: 100%; height: auto;}
+.bldg .b-done {position: absolute; inset: 0;}
+.bldg .b-ground {position: absolute; left: 0; right: -44px; border-top: 2px solid #8C6D4F;}
+.bldg .b-cur {position: absolute; left: 0; right: -44px; border-top: 3px solid #FF8C00;
+              box-shadow: 0 -6px 10px -4px rgba(255,140,0,.45);}
+.bldg .b-cur span {position: absolute; right: 44px; bottom: 4px; background: #FF8C00; color: #fff;
+                   font-weight: 700; font-size: .85rem; padding: 2px 10px; border-radius: 8px; white-space: nowrap;}
+.bldg .b-scale {position: absolute; top: 0; bottom: 0; left: 100%; width: 44px; border-left: 1px solid #C9D3C4;}
+.bldg .b-tick {position: absolute; left: 0; transform: translateY(-50%); font-size: .72rem; color: #6B7768;
+               padding-left: 9px; line-height: 1; white-space: nowrap;}
+.bldg .b-tick::before {content: ""; position: absolute; left: 0; top: 50%; width: 6px; border-top: 1px solid #9AA596;}
+.b-legend {display: flex; gap: 14px; justify-content: center; margin-top: 10px; font-size: .78rem; color: #4A5547;}
+.b-legend i {display: inline-block; width: 12px; height: 12px; border-radius: 3px; margin-right: 4px; vertical-align: -1px;}
+.lg-done {background: #8E968C;} .lg-todo {background: #EDEFEC; border: 1px solid #D5DAD2;} .lg-cur {background: #FF8C00;}
 .btn {display: inline-block; padding: 10px 18px; border-radius: 10px; font-weight: 600; text-decoration: none !important;}
 .btn-line {background: #06C755; color: #fff !important;}
 @media (max-width: 640px) {
@@ -130,6 +155,29 @@ def img_src(url, width):
     if not USE_IMAGE_PROXY:
         return url
     return f"https://images.weserv.nl/?url={quote(url.replace('https://', ''), safe='')}&w={width}&q=72&output=jpg"
+
+
+@st.cache_data
+def _image_data_url(path, mtime):
+    return "data:image/jpeg;base64," + base64.b64encode(Path(path).read_bytes()).decode()
+
+
+def building_image(name):
+    """讀取 assets/ 裡的大樓圖片並轉成內嵌網址 (換圖後會自動更新)"""
+    path = Path(__file__).parent / "assets" / name
+    try:
+        return _image_data_url(str(path), path.stat().st_mtime)
+    except OSError:
+        return ""
+
+
+def floor_pct(floor):
+    """某層樓板在大樓圖上的高度位置 (%)"""
+    if floor >= 2:
+        return BLDG_FLOOR2_PCT - (floor - 2) * BLDG_FLOOR_STEP_PCT
+    if floor == 1:
+        return BLDG_GROUND_PCT
+    return BLDG_BASEMENT_PCT.get(floor, 100)
 
 
 def badge(status):
@@ -301,34 +349,38 @@ with tab_overview:
     # --- 🏢 樓層剖面圖 ---
     with col_building:
         st.markdown("**🏢 樓層剖面圖**")
-        fh, w, left = 13, 170, 52
-        n_total = TOTAL_FLOORS + BASEMENT_FLOORS
-        top = 18
-        height = top + n_total * fh + 30
-        parts = []
-        for i in range(n_total):
-            floor = TOTAL_FLOORS - i if i < TOTAL_FLOORS else -(i - TOTAL_FLOORS + 1)
-            y = top + i * fh + (6 if floor < 0 else 0)
-            if floor > 0:
-                done = floor <= current_floor
-                fill = "#FFB020" if floor == current_floor else ("#5FA82E" if done else "#FFFFFF")
+        img_done, img_todo = building_image("building_done.jpg"), building_image("building_todo.jpg")
+        if img_done and img_todo:
+            # 分界線：已完成樓層的「頂版」位置 (17F 頂版完成 → 線畫在 18F 樓板)
+            if current_floor > 0:
+                cut = floor_pct(current_floor + 1)
+            elif basement_done >= BASEMENT_FLOORS:
+                cut = BLDG_GROUND_PCT
             else:
-                done = -floor <= basement_done
-                fill = "#8C6D4F" if done else "#FFFFFF"
-            parts.append(f"<rect x='{left}' y='{y}' width='{w}' height='{fh - 2}' rx='2' fill='{fill}' stroke='#C9D3C4' stroke-width='1'/>")
-            if floor in (TOTAL_FLOORS, 20, 15, 10, 5, 1) or floor == -1 or floor == -BASEMENT_FLOORS:
-                label = f"{floor}F" if floor > 0 else f"B{-floor}"
-                parts.append(f"<text x='{left - 8}' y='{y + fh - 4}' text-anchor='end' font-size='10' fill='#6B7768'>{label}</text>")
-            if floor == current_floor and current_floor > 0:
-                parts.append(f"<text x='{left + w + 8}' y='{y + fh - 3}' font-size='11' font-weight='700' fill='#B57400'>◀ 目前 {current_floor}F</text>")
-        ground_y = top + TOTAL_FLOORS * fh + 2
-        parts.append(f"<line x1='10' x2='{left + w + 40}' y1='{ground_y}' y2='{ground_y}' stroke='#6B7768' stroke-dasharray='4 3'/>")
-        parts.append(f"<text x='{left + w + 8}' y='{ground_y + 4}' font-size='10' fill='#6B7768'>地面</text>")
-        legend_y = height - 8
-        parts.append(f"<rect x='{left}' y='{legend_y - 9}' width='10' height='10' fill='#5FA82E'/><text x='{left + 14}' y='{legend_y}' font-size='10' fill='#4A5547'>已完成</text>")
-        parts.append(f"<rect x='{left + 60}' y='{legend_y - 9}' width='10' height='10' fill='#FFB020'/><text x='{left + 74}' y='{legend_y}' font-size='10' fill='#4A5547'>最新</text>")
-        parts.append(f"<rect x='{left + 110}' y='{legend_y - 9}' width='10' height='10' fill='#fff' stroke='#C9D3C4'/><text x='{left + 124}' y='{legend_y}' font-size='10' fill='#4A5547'>未施工</text>")
-        show_html(f"<div class='card' style='text-align:center;'><svg viewBox='0 0 {left + w + 80} {height}' style='width:100%;max-width:340px;' role='img' aria-label='樓層剖面圖'>{''.join(parts)}</svg></div>")
+                cut = 100
+            # 刻度標在該層的正中間；地下室合併成一個「B1–B4」
+            ticks = "".join(
+                f"<div class='b-tick' style='top:{(floor_pct(f) + floor_pct(f + 1)) / 2:.2f}%'>{f}F</div>"
+                for f in (TOTAL_FLOORS, 20, 15, 10, 5, 1))
+            ticks += (f"<div class='b-tick' style='top:{(BLDG_GROUND_PCT + floor_pct(-BASEMENT_FLOORS)) / 2:.2f}%'>"
+                      f"B1–B{BASEMENT_FLOORS}</div>")
+            cur_label = f"目前 {current_floor}F" if current_floor > 0 else "地下室施工中"
+            show_html(f"""
+            <div class="card bldg-card">
+              <div class="bldg">
+                <img class="b-todo" src="{img_todo}" alt="">
+                <img class="b-done" src="{img_done}" alt="樓層剖面圖：已完成 {current_floor}F / {TOTAL_FLOORS}F"
+                     style="clip-path: inset({cut:.2f}% 0 0 0);">
+                <div class="b-ground" style="top:{BLDG_GROUND_PCT}%"></div>
+                <div class="b-cur" style="top:{cut:.2f}%"><span>{esc(cur_label)}</span></div>
+                <div class="b-scale">{ticks}</div>
+              </div>
+              <div class="b-legend"><span><i class="lg-done"></i>已完成</span><span><i class="lg-todo"></i>尚未施工</span>
+                <span><i class="lg-cur"></i>目前進度</span></div>
+            </div>
+            """)
+        else:
+            st.info("找不到 assets/ 裡的大樓圖片")
 
     # --- 🗺️ 工程階段 ---
     with col_road:
